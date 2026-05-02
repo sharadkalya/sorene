@@ -1,11 +1,23 @@
 import type { Metadata } from "next";
-import { GeistSans } from "geist/font/sans";
-import { GeistMono } from "geist/font/mono";
+import { Cormorant_Garamond, Jost } from "next/font/google";
 import "./globals.css";
 
+const cormorant = Cormorant_Garamond({
+  weight: ['300', '400', '500'],
+  style: ['normal', 'italic'],
+  subsets: ['latin'],
+  variable: '--font-cormorant',
+});
+
+const jost = Jost({
+  weight: ['300', '400', '500'],
+  subsets: ['latin'],
+  variable: '--font-jost',
+});
+
 export const metadata: Metadata = {
-  title: "Sorene",
-  description: "E-commerce fashion app",
+  title: "SORÈNE — Structured Luxury from India",
+  description: "Limited-edition bags. Designed in India. Radically scarce.",
 };
 
 export default function RootLayout({
@@ -14,11 +26,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="en" className={`${cormorant.variable} ${jost.variable}`}>
+      <body>{children}</body>
     </html>
   );
 }

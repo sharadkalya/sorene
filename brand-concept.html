@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SORÈNE — Brand Concept</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #0a0a0a;
+    --off: #f5f3f0;
+    --warm: #c4a882;
+    --muted: #888;
+    --light: #e8e4de;
+    --gold: #b8975a;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--off);
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    position: fixed; width: 8px; height: 8px;
+    background: var(--off); border-radius: 50%;
+    pointer-events: none; z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s ease, width 0.3s ease, height 0.3s ease, background 0.3s ease;
+  }
+  .cursor-ring {
+    position: fixed; width: 32px; height: 32px;
+    border: 1px solid rgba(245,243,240,0.4); border-radius: 50%;
+    pointer-events: none; z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: transform 0.15s ease, width 0.3s ease, height 0.3s ease, opacity 0.3s ease;
+  }
+  body:hover .cursor { opacity: 1; }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 28px 48px;
+  }
+  .nav-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px; letter-spacing: 0.4em;
+    text-transform: uppercase; color: #ffffff;
+    font-weight: 500;
+    text-shadow: 0 0 40px rgba(255,255,255,0.3);
+  }
+  .nav-links { display: flex; gap: 40px; }
+  .nav-links a {
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--off); text-decoration: none; opacity: 0.6;
+    transition: opacity 0.3s;
+  }
+  .nav-links a:hover { opacity: 1; }
+
+  /* HERO */
+  .hero {
+    height: 100vh; display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    position: relative; overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 60%, rgba(180,160,120,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 30%, rgba(100,80,60,0.06) 0%, transparent 50%);
+  }
+  .hero-line {
+    position: absolute; width: 1px; background: rgba(245,243,240,0.08);
+    top: 0; bottom: 0;
+  }
+  .hero-line:nth-child(1) { left: 20%; }
+  .hero-line:nth-child(2) { left: 80%; }
+
+  .hero-content { text-align: center; position: relative; z-index: 2; }
+  .hero-eyebrow {
+    font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase;
+    color: var(--warm); margin-bottom: 32px;
+    animation: fadeUp 1.2s ease 0.3s both;
+  }
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(72px, 12vw, 160px);
+    font-weight: 500; letter-spacing: 0.05em;
+    line-height: 0.9; color: #ffffff;
+    text-shadow: 0 4px 60px rgba(255,255,255,0.15);
+  }
+  .hero-title em { font-style: italic; font-weight: 400; color: var(--warm); }
+  .hero-sub {
+    margin-top: 40px; font-size: 12px; letter-spacing: 0.25em;
+    text-transform: uppercase; color: var(--muted);
+    animation: fadeUp 1.2s ease 0.7s both;
+  }
+  .hero-cta {
+    margin-top: 60px;
+    animation: fadeUp 1.2s ease 0.9s both;
+  }
+  .btn-primary {
+    display: inline-block;
+    padding: 16px 48px; font-size: 10px;
+    letter-spacing: 0.3em; text-transform: uppercase;
+    border: 1px solid rgba(245,243,240,0.3);
+    color: var(--off); text-decoration: none;
+    transition: all 0.4s ease; background: transparent;
+    cursor: none;
+  }
+  .btn-primary:hover {
+    background: var(--off); color: var(--black);
+    border-color: var(--off);
+  }
+
+  .hero-scroll {
+    position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    animation: fadeUp 1.2s ease 1.2s both;
+  }
+  .scroll-line {
+    width: 1px; height: 40px; background: linear-gradient(to bottom, var(--warm), transparent);
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+  .scroll-text { font-size: 9px; letter-spacing: 0.3em; color: var(--muted); text-transform: uppercase; }
+
+  /* DROP SECTION */
+  .drop-section {
+    min-height: 100vh; display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .drop-visual {
+    background: #111; position: relative; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 600px;
+  }
+  .bag-render {
+    width: 260px; height: 300px; position: relative;
+  }
+  .bag-body {
+    width: 220px; height: 200px;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 40%, #1e1e1e 100%);
+    border-radius: 4px 4px 12px 12px;
+    position: absolute; bottom: 60px; left: 20px;
+    box-shadow: 8px 16px 40px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.05);
+  }
+  .bag-flap {
+    width: 220px; height: 100px;
+    background: linear-gradient(135deg, #222 0%, #333 50%, #1e1e1e 100%);
+    border-radius: 4px 4px 50% 50% / 4px 4px 40px 40px;
+    position: absolute; bottom: 220px; left: 20px;
+    box-shadow: 4px -4px 20px rgba(0,0,0,0.4);
+  }
+  .bag-clasp {
+    width: 24px; height: 16px;
+    background: linear-gradient(135deg, #c9a96e, #f0d090, #c9a96e);
+    border-radius: 3px;
+    position: absolute; bottom: 290px; left: 108px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  }
+  .bag-handle {
+    width: 120px; height: 60px;
+    border: 2px solid #3a3a3a;
+    border-bottom: none;
+    border-radius: 60px 60px 0 0;
+    position: absolute; top: 10px; left: 70px;
+  }
+  .bag-stitch {
+    position: absolute; bottom: 130px; left: 40px; right: 40px;
+    height: 1px; background: rgba(255,255,255,0.06);
+  }
+  .bag-stitch::before {
+    content: ''; position: absolute; top: 40px; left: 0; right: 0;
+    height: 1px; background: rgba(255,255,255,0.04);
+  }
+
+  /* Floating tag */
+  .bag-tag {
+    position: absolute; top: 60px; right: 30px;
+    width: 60px; height: 80px;
+    background: var(--off); border-radius: 2px;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 4px;
+    box-shadow: 4px 8px 20px rgba(0,0,0,0.6);
+    transform: rotate(8deg);
+    animation: tagFloat 4s ease-in-out infinite;
+  }
+  .tag-name { font-size: 8px; letter-spacing: 0.2em; color: var(--black); font-family: 'Cormorant Garamond', serif; }
+  .tag-line { width: 30px; height: 1px; background: var(--warm); }
+  .tag-price { font-size: 9px; color: var(--black); letter-spacing: 0.1em; }
+
+  .drop-visual-label {
+    position: absolute; bottom: 40px; left: 40px;
+    font-size: 10px; letter-spacing: 0.3em; color: var(--muted); text-transform: uppercase;
+  }
+  .drop-visual-num {
+    position: absolute; top: 40px; right: 40px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 80px; color: rgba(255,255,255,0.04); font-weight: 300;
+    line-height: 1;
+  }
+
+  .drop-info {
+    padding: 80px; display: flex; flex-direction: column;
+    justify-content: center; background: #0d0d0d;
+  }
+  .drop-label {
+    font-size: 10px; letter-spacing: 0.4em; color: var(--warm);
+    text-transform: uppercase; margin-bottom: 24px;
+  }
+  .drop-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 52px; font-weight: 300; line-height: 1.1;
+    margin-bottom: 32px; color: var(--off);
+  }
+  .drop-desc {
+    font-size: 14px; line-height: 1.9; color: rgba(245,243,240,0.5);
+    max-width: 380px; margin-bottom: 48px;
+  }
+  .drop-meta { display: flex; gap: 48px; margin-bottom: 48px; }
+  .meta-item { display: flex; flex-direction: column; gap: 6px; }
+  .meta-label { font-size: 9px; letter-spacing: 0.3em; color: var(--muted); text-transform: uppercase; }
+  .meta-value { font-family: 'Cormorant Garamond', serif; font-size: 24px; color: var(--off); }
+  .sold-bar { display: flex; align-items: center; gap: 16px; margin-bottom: 40px; }
+  .sold-track { flex: 1; height: 1px; background: rgba(255,255,255,0.1); position: relative; }
+  .sold-fill { height: 100%; background: var(--warm); width: 73%; }
+  .sold-text { font-size: 10px; letter-spacing: 0.2em; color: var(--muted); white-space: nowrap; }
+
+  /* STRATEGY SECTION */
+  .strategy-section {
+    padding: 120px 80px; background: var(--off); color: var(--black);
+  }
+  .section-header { margin-bottom: 80px; }
+  .section-label {
+    font-size: 10px; letter-spacing: 0.4em; color: var(--warm);
+    text-transform: uppercase; margin-bottom: 20px;
+  }
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 56px; font-weight: 300; line-height: 1.1;
+    max-width: 600px;
+  }
+  .pillars-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--light); }
+  .pillar {
+    background: var(--off); padding: 48px 40px;
+    transition: background 0.4s;
+  }
+  .pillar:hover { background: var(--black); color: var(--off); }
+  .pillar:hover .pillar-num, .pillar:hover .pillar-name { color: var(--off); }
+  .pillar:hover .pillar-text { color: rgba(245,243,240,0.5); }
+  .pillar-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 48px; color: var(--light); margin-bottom: 24px;
+    transition: color 0.4s;
+  }
+  .pillar-name {
+    font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--black); margin-bottom: 16px; font-weight: 500;
+    transition: color 0.4s;
+  }
+  .pillar-text { font-size: 13px; line-height: 1.8; color: #666; transition: color 0.4s; }
+
+  /* DROP CADENCE */
+  .cadence-section { padding: 120px 80px; background: #0d0d0d; }
+  .cadence-section .section-title { color: var(--off); }
+  .cadence-section .section-label { color: var(--warm); }
+  .drops-timeline { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; margin-top: 64px; background: rgba(255,255,255,0.05); }
+  .drop-card {
+    background: #0a0a0a; padding: 40px 28px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    transition: background 0.4s;
+  }
+  .drop-card:hover { background: #141414; }
+  .drop-card.active { border-top-color: var(--warm); }
+  .dc-num { font-family: 'Cormorant Garamond', serif; font-size: 40px; color: rgba(255,255,255,0.1); margin-bottom: 20px; }
+  .dc-label { font-size: 9px; letter-spacing: 0.3em; color: var(--warm); text-transform: uppercase; margin-bottom: 8px; }
+  .dc-month { font-size: 13px; color: var(--off); margin-bottom: 16px; }
+  .dc-units { font-family: 'Cormorant Garamond', serif; font-size: 32px; color: var(--off); }
+  .dc-unit-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; }
+
+  /* PRICING */
+  .pricing-section { padding: 120px 80px; display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+  .pricing-left { background: var(--black); padding: 80px; }
+  .pricing-right { background: #111; padding: 80px; }
+  .price-tag {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 80px; font-weight: 300; color: var(--off);
+    line-height: 1;
+  }
+  .price-sub { font-size: 11px; letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase; margin-top: 8px; }
+  .margin-bar-wrap { margin-top: 48px; }
+  .mbar-label { font-size: 10px; letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase; margin-bottom: 12px; }
+  .mbar-track { height: 2px; background: rgba(255,255,255,0.08); margin-bottom: 24px; }
+  .mbar-fill { height: 100%; transition: width 1.5s ease; }
+  .mbar-val { font-family: 'Cormorant Garamond', serif; font-size: 20px; color: var(--off); margin-top: -8px; }
+
+  .comparison-list { margin-top: 40px; }
+  .comp-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .comp-brand { font-size: 12px; letter-spacing: 0.1em; color: var(--muted); }
+  .comp-price { font-family: 'Cormorant Garamond', serif; font-size: 20px; color: var(--off); }
+  .comp-item.yours .comp-brand { color: var(--warm); }
+  .comp-item.yours .comp-price { color: var(--warm); }
+
+  /* MANIFESTO */
+  .manifesto { padding: 160px 80px; background: var(--off); text-align: center; }
+  .manifesto-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(28px, 4vw, 52px);
+    font-weight: 300; line-height: 1.4;
+    max-width: 900px; margin: 0 auto;
+    color: var(--black);
+  }
+  .manifesto-text em { font-style: italic; color: var(--warm); }
+  .manifesto-attr {
+    margin-top: 48px; font-size: 11px; letter-spacing: 0.3em;
+    color: var(--muted); text-transform: uppercase;
+  }
+
+  /* FOOTER */
+  footer {
+    background: var(--black); padding: 60px 80px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 20px; letter-spacing: 0.3em; color: var(--off); }
+  .footer-note { font-size: 11px; letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase; }
+  .footer-tag { font-size: 11px; color: var(--muted); letter-spacing: 0.1em; }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.4; transform: scaleY(1); }
+    50% { opacity: 1; transform: scaleY(1.1); }
+  }
+  @keyframes tagFloat {
+    0%, 100% { transform: rotate(8deg) translateY(0); }
+    50% { transform: rotate(8deg) translateY(-8px); }
+  }
+
+  /* Scroll reveal */
+  .reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.8s ease, transform 0.8s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+
+  /* Noise overlay */
+  body::before {
+    content: ''; position: fixed; inset: 0; z-index: 1000;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none; opacity: 0.4;
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">SORÈNE</div>
+  <div class="nav-links">
+    <a href="#">Drop 01</a>
+    <a href="#">Atelier</a>
+    <a href="#">Waitlist</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-line"></div>
+  <div class="hero-line"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Drop 01 — Available Now</div>
+    <h1 class="hero-title">Sor<em>è</em>ne</h1>
+    <p class="hero-sub">Structured Faux Leather  ·  India  ·  15 Pieces Only</p>
+    <div class="hero-cta">
+      <a href="#drop" class="btn-primary">View the Collection</a>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    <span class="scroll-text">Scroll</span>
+  </div>
+</section>
+
+<!-- DROP SECTION -->
+<section class="drop-section" id="drop">
+  <div class="drop-visual">
+    <div class="bag-render">
+      <div class="bag-handle"></div>
+      <div class="bag-flap"></div>
+      <div class="bag-clasp"></div>
+      <div class="bag-body">
+        <div class="bag-stitch"></div>
+      </div>
+    </div>
+    <div class="bag-tag">
+      <span class="tag-name">SORÈNE</span>
+      <div class="tag-line"></div>
+      <span class="tag-price">₹7,900</span>
+    </div>
+    <div class="drop-visual-label">The Noir Tote — Drop 01</div>
+    <div class="drop-visual-num">01</div>
+  </div>
+
+  <div class="drop-info">
+    <div class="drop-label reveal">Sorène  ·  Drop 01  ·  2026</div>
+    <h2 class="drop-title reveal reveal-delay-1">The<br><em>Noir</em> Tote</h2>
+    <p class="drop-desc reveal reveal-delay-2">
+      Structured PU leather in obsidian black. Gold-cast hardware. 
+      Suede-effect tan interior. Designed to carry a day's worth — 
+      and outlast the trends.
+    </p>
+    <div class="drop-meta reveal reveal-delay-2">
+      <div class="meta-item">
+        <span class="meta-label">Price</span>
+        <span class="meta-value">₹7,900</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Edition</span>
+        <span class="meta-value">15 Only</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Ships</span>
+        <span class="meta-value">Pan-India</span>
+      </div>
+    </div>
+    <div class="sold-bar reveal reveal-delay-3">
+      <span class="sold-text">11 of 15 claimed</span>
+      <div class="sold-track"><div class="sold-fill"></div></div>
+      <span class="sold-text">4 left</span>
+    </div>
+    <a href="#" class="btn-primary reveal reveal-delay-3">Claim Yours — ₹7,900</a>
+  </div>
+</section>
+
+<!-- BRAND PILLARS -->
+<section class="strategy-section">
+  <div class="section-header reveal">
+    <div class="section-label">The Brand</div>
+    <h2 class="section-title">Built on three uncompromising principles</h2>
+  </div>
+  <div class="pillars-grid">
+    <div class="pillar reveal">
+      <div class="pillar-num">01</div>
+      <div class="pillar-name">Radical Scarcity</div>
+      <p class="pillar-text">Each drop is finite. Once gone, it's gone. No restocks. No sales. The rarity is the product.</p>
+    </div>
+    <div class="pillar reveal reveal-delay-1">
+      <div class="pillar-num">02</div>
+      <div class="pillar-name">Quiet Presence</div>
+      <p class="pillar-text">No Instagram noise. No loud campaigns. Those who find us, find us. Discovery is part of the experience.</p>
+    </div>
+    <div class="pillar reveal reveal-delay-2">
+      <div class="pillar-num">03</div>
+      <div class="pillar-name">Deliberate Craft</div>
+      <p class="pillar-text">Premium PU leather. Brushed gold hardware. Hand-finished interiors. Every detail earns its place.</p>
+    </div>
+  </div>
+</section>
+
+<!-- DROP CADENCE -->
+<section class="cadence-section">
+  <div class="section-header reveal">
+    <div class="section-label">The Model</div>
+    <h2 class="section-title" style="color:var(--off)">Drops, not collections.<br>Scarcity, not volume.</h2>
+  </div>
+  <div class="drops-timeline">
+    <div class="drop-card active reveal">
+      <div class="dc-num">01</div>
+      <div class="dc-label">Now Live</div>
+      <div class="dc-month">March 2026</div>
+      <div class="dc-units">15</div>
+      <div class="dc-unit-label">pieces</div>
+    </div>
+    <div class="drop-card reveal reveal-delay-1">
+      <div class="dc-num">02</div>
+      <div class="dc-label">Coming Soon</div>
+      <div class="dc-month">June 2026</div>
+      <div class="dc-units">20</div>
+      <div class="dc-unit-label">pieces</div>
+    </div>
+    <div class="drop-card reveal reveal-delay-2">
+      <div class="dc-num">03</div>
+      <div class="dc-label">Planned</div>
+      <div class="dc-month">Aug 2026</div>
+      <div class="dc-units">25</div>
+      <div class="dc-unit-label">pieces</div>
+    </div>
+    <div class="drop-card reveal reveal-delay-3">
+      <div class="dc-num">04</div>
+      <div class="dc-label">Planned</div>
+      <div class="dc-month">Oct 2026</div>
+      <div class="dc-units">35</div>
+      <div class="dc-unit-label">pieces</div>
+    </div>
+    <div class="drop-card reveal reveal-delay-3">
+      <div class="dc-num">05</div>
+      <div class="dc-label">Planned</div>
+      <div class="dc-month">Dec 2026</div>
+      <div class="dc-units">50</div>
+      <div class="dc-unit-label">pieces</div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING CONTEXT -->
+<section class="pricing-section">
+  <div class="pricing-left reveal">
+    <div class="section-label" style="color:var(--warm)">Pricing</div>
+    <div class="price-tag">₹7,900</div>
+    <div class="price-sub">Per piece  ·  DTC  ·  No middlemen</div>
+    <div class="margin-bar-wrap">
+      <div class="mbar-label">Gross margin</div>
+      <div class="mbar-track"><div class="mbar-fill" style="width:65%; background: var(--warm);"></div></div>
+      <div class="mbar-val">~65%</div>
+      <div class="mbar-label" style="margin-top:24px">Material quality</div>
+      <div class="mbar-track"><div class="mbar-fill" style="width:88%; background: rgba(196,168,130,0.6);"></div></div>
+      <div class="mbar-val">Premium PU</div>
+    </div>
+  </div>
+  <div class="pricing-right reveal reveal-delay-1">
+    <div class="section-label" style="color:var(--warm)">Market Context</div>
+    <h3 style="font-family:'Cormorant Garamond',serif; font-size:28px; color:var(--off); font-weight:300; margin-bottom:8px; margin-top:16px;">The gap you're filling</h3>
+    <div class="comparison-list">
+      <div class="comp-item"><span class="comp-brand">Chanel Classic Flap</span><span class="comp-price">₹5,80,000+</span></div>
+      <div class="comp-item"><span class="comp-brand">Polène Numéro Un</span><span class="comp-price">₹38,000+</span></div>
+      <div class="comp-item"><span class="comp-brand">Charles & Keith Premium</span><span class="comp-price">₹8,000–₹15,000</span></div>
+      <div class="comp-item yours"><span class="comp-brand">SORÈNE (Your Brand)</span><span class="comp-price">₹7,900</span></div>
+      <div class="comp-item"><span class="comp-brand">Mass Faux Leather</span><span class="comp-price">₹800–₹2,500</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- MANIFESTO -->
+<section class="manifesto">
+  <blockquote class="manifesto-text reveal">
+    "We make <em>very few bags.</em> Each one is finished by hand, shipped in a box that feels like a gift, and priced at what it should cost — not what luxury marketing inflates it to."
+  </blockquote>
+  <p class="manifesto-attr reveal reveal-delay-1">— Sorène, Brand Philosophy</p>
+  <div style="margin-top:60px;" class="reveal reveal-delay-2">
+    <a href="#" class="btn-primary" style="border-color:rgba(0,0,0,0.2); color:var(--black);">Join the Waitlist for Drop 02</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">SORÈNE</div>
+  <div class="footer-note">India  ·  DTC Only  ·  Limited Drops</div>
+  <div class="footer-tag">Brand Concept — 2026</div>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  (function animate() {
+    rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+    cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+    ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+    requestAnimationFrame(animate);
+  })();
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => { cursor.style.width = '4px'; cursor.style.height = '4px'; ring.style.width = '48px'; ring.style.height = '48px'; });
+    el.addEventListener('mouseleave', () => { cursor.style.width = '8px'; cursor.style.height = '8px'; ring.style.width = '32px'; ring.style.height = '32px'; });
+  });
+
+  // Scroll reveal
+  const revealEls = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+  }, { threshold: 0.15 });
+  revealEls.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
