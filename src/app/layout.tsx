@@ -24,8 +24,17 @@ export const metadata: Metadata = {
 };
 
 async function getTheme() {
+  // During build or when DB is not available, use default theme
+  if (!process.env.MONGODB_URI || process.env.NEXT_PHASE === 'phase-production-build') {
+    return 'sorvene';
+  }
+
   try {
-    await connectDB();
+    const db = await connectDB();
+    if (!db) {
+      return 'sorvene';
+    }
+    
     let settings = await SiteSettings.findOne();
     if (!settings) {
       settings = await SiteSettings.create({ theme: 'sorvene' });

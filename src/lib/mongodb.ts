@@ -2,12 +2,6 @@ import mongoose from 'mongoose';
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
-if (!MONGODB_URI) {
-  throw new Error(
-    'Please define the MONGODB_URI environment variable inside .env.local'
-  );
-}
-
 interface MongooseCache {
   conn: typeof mongoose | null;
   promise: Promise<typeof mongoose> | null;
@@ -24,6 +18,18 @@ if (!global.mongoose) {
 }
 
 async function connectDB() {
+  // Skip DB connection during build phase
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    console.log('Skipping DB connection during build phase');
+    return null;
+  }
+
+  if (!MONGODB_URI) {
+    throw new Error(
+      'Please define the MONGODB_URI environment variable'
+    );
+  }
+
   if (cached.conn) {
     return cached.conn;
   }
@@ -33,7 +39,7 @@ async function connectDB() {
       bufferCommands: false,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => {
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
       return mongoose;
     });
   }
