@@ -50,6 +50,46 @@ This application requires the following environment variables to be set:
 
 ### Troubleshooting
 
+**⚠️ MOST COMMON: 400 Error - "Could not connect to MongoDB Atlas" / IP Not Whitelisted:**
+
+This happens because Vercel's servers aren't allowed to access your MongoDB Atlas cluster.
+
+**Solution:**
+1. Go to [MongoDB Atlas Dashboard](https://cloud.mongodb.com)
+2. Select your cluster (e.g., `sorvene-staging`)
+3. Click **Network Access** in the left sidebar
+4. Click **Add IP Address** button
+5. Select **Allow Access from Anywhere**
+6. This will add `0.0.0.0/0` to your IP whitelist
+7. Click **Confirm**
+8. Wait 1-2 minutes for the change to propagate
+9. Test your deployment again
+
+**Security Note:** 
+- `0.0.0.0/0` is the **recommended approach** for Vercel (and all serverless platforms)
+- Vercel uses dynamic IPs that change frequently - no static IP list exists
+- Your actual security comes from:
+  - ✅ Connection string authentication (username/password)
+  - ✅ TLS/SSL encryption
+  - ✅ Database-level permissions
+  - ✅ Secret environment variables (MONGODB_URI is never exposed)
+- IP whitelisting alone doesn't protect you - attackers would still need your secret connection string
+
+**Alternative (More Secure) Options:**
+1. **Use MongoDB Atlas Vercel Integration** (Recommended):
+   - In Vercel dashboard → Integrations → Browse Marketplace
+   - Search for "MongoDB Atlas" and install
+   - This automatically manages IP whitelisting
+   
+2. **Separate database for production**:
+   - Use a production-only cluster with restricted access
+   - Keep development database with `0.0.0.0/0` for testing
+   
+3. **Enable MongoDB Atlas IP Access List API**:
+   - Use Vercel build hooks to dynamically update IPs (complex, not recommended)
+
+---
+
 **Build fails with "MONGODB_URI not defined":**
 - Ensure the environment variable is set in Vercel dashboard
 - Check that the variable name is exactly `MONGODB_URI` (case-sensitive)

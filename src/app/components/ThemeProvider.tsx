@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 export default function ThemeProvider({ 
   children,
@@ -9,16 +9,35 @@ export default function ThemeProvider({
   children: React.ReactNode;
   initialTheme?: string;
 }) {
-  const [mounted, setMounted] = useState(false);
-
   useEffect(() => {
-    setMounted(true);
-    // Set initial theme
-    document.documentElement.setAttribute('data-theme', initialTheme);
+    
+    // Fetch the latest theme from API on mount
+    const fetchTheme = async () => {
+      try {
+        const response = await fetch('/api/settings', {
+          cache: 'no-store', // Don't cache this request
+        });
+        const data = await response.json();
+        if (data.success && data.data?.theme) {
+          const fetchedTheme = data.data.theme;
+          document.documentElement.setAttribute('data-theme', fetchedTheme);
+        } else {
+          // Fallback to initial theme
+          document.documentElement.setAttribute('data-theme', initialTheme);
+        }
+      } catch (error) {
+        console.error('Error fetching theme:', error);
+        // Fallback to initial theme
+        document.documentElement.setAttribute('data-theme', initialTheme);
+      }
+    };
 
-    // Listen for theme changes
+    fetchTheme();
+
+    // Listen for theme changes from admin panel
     const handleThemeChange = (event: CustomEvent) => {
-      document.documentElement.setAttribute('data-theme', event.detail.theme);
+      const newTheme = event.detail.theme;
+      document.documentElement.setAttribute('data-theme', newTheme);
     };
 
     window.addEventListener('themeChange' as any, handleThemeChange);
@@ -26,10 +45,6 @@ export default function ThemeProvider({
       window.removeEventListener('themeChange' as any, handleThemeChange);
     };
   }, [initialTheme]);
-
-  if (!mounted) {
-    return <>{children}</>;
-  }
 
   return <>{children}</>;
 }

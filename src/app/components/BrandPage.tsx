@@ -1,11 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import styles from './BrandPage.module.css';
 
 export default function BrandPage() {
-  const cursorRef = useRef<HTMLDivElement>(null);
-  const ringRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
 
   const scrollToSection = (id: string) => {
@@ -14,64 +12,6 @@ export default function BrandPage() {
   };
 
   useEffect(() => {
-    let mx = 0, my = 0, rx = 0, ry = 0;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      mx = e.clientX;
-      my = e.clientY;
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
-
-    const animate = () => {
-      rx += (mx - rx) * 0.12;
-      ry += (my - ry) * 0.12;
-
-      if (cursorRef.current) {
-        cursorRef.current.style.left = mx + 'px';
-        cursorRef.current.style.top = my + 'px';
-      }
-      if (ringRef.current) {
-        ringRef.current.style.left = rx + 'px';
-        ringRef.current.style.top = ry + 'px';
-      }
-
-      requestAnimationFrame(animate);
-    };
-
-    animate();
-
-    // Hover effect for interactive elements
-    const handleMouseEnter = () => {
-      if (cursorRef.current) {
-        cursorRef.current.style.width = '3px';
-        cursorRef.current.style.height = '3px';
-      }
-      if (ringRef.current) {
-        ringRef.current.style.width = '42px';
-        ringRef.current.style.height = '42px';
-        ringRef.current.classList.add('opacity-60');
-      }
-    };
-
-    const handleMouseLeave = () => {
-      if (cursorRef.current) {
-        cursorRef.current.style.width = '5px';
-        cursorRef.current.style.height = '5px';
-      }
-      if (ringRef.current) {
-        ringRef.current.style.width = '26px';
-        ringRef.current.style.height = '26px';
-        ringRef.current.classList.remove('opacity-60');
-      }
-    };
-
-    const interactiveElements = document.querySelectorAll('a, button, input, textarea');
-    interactiveElements.forEach(el => {
-      el.addEventListener('mouseenter', handleMouseEnter);
-      el.addEventListener('mouseleave', handleMouseLeave);
-    });
-
     // Nav scroll effect
     const handleScroll = () => {
       if (navRef.current) {
@@ -96,12 +36,7 @@ export default function BrandPage() {
     revealEls.forEach(el => observer.observe(el));
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('scroll', handleScroll);
-      interactiveElements.forEach(el => {
-        el.removeEventListener('mouseenter', handleMouseEnter);
-        el.removeEventListener('mouseleave', handleMouseLeave);
-      });
       revealEls.forEach(el => observer.unobserve(el));
     };
   }, []);
@@ -122,9 +57,6 @@ export default function BrandPage() {
 
   return (
     <>
-      <div ref={cursorRef} className={`${styles.cur} bg-primary`} id="cur"></div>
-      <div ref={ringRef} className={`${styles.curR} border border-primary/30`} id="curR"></div>
-
       {/* NAV */}
       <nav ref={navRef} className={`${styles.nav} bg-base-100/92 border-b border-base-300/40`} id="nav">
         <div className={`${styles.navLogo} text-base-content`} onClick={() => scrollToSection('hero')}>SORvÈNE</div>
@@ -171,7 +103,7 @@ export default function BrandPage() {
             </p>
             
             <p className={`${styles.reveal} ${styles.d1} text-base-content/70`}>
-              Every bag is crafted from premium full-grain leather and finished by hand. Hardware is antique brass. Interiors are designed for longevity. We make very few pieces, and they&apos;re priced at what they should cost — not what marketing inflates them to.
+              Every bag is crafted from premium full-grain leather and finished by hand. Interiors are designed for longevity. We make very few pieces, and they&apos;re priced at what they should cost — not what marketing inflates them to.
             </p>
             
             <p className={`${styles.reveal} ${styles.d2} text-base-content/70`}>
@@ -180,10 +112,6 @@ export default function BrandPage() {
           </div>
 
           <div className={styles.aboutStats}>
-            <div className={`${styles.stat} ${styles.reveal} border-l-primary`}>
-              <div className={`${styles.statNum} text-primary`}>Drop 01</div>
-              <div className={`${styles.statLabel} text-base-content/60`}>Live Now</div>
-            </div>
             <div className={`${styles.stat} ${styles.reveal} ${styles.d1} border-l-primary`}>
               <div className={`${styles.statNum} text-primary`}>100%</div>
               <div className={`${styles.statLabel} text-base-content/60`}>Premium Leather</div>
@@ -288,7 +216,7 @@ export default function BrandPage() {
               <h3 className="text-base-content">Follow</h3>
               <div className={`${styles.contactDetail} text-base-content/70`}>
                 <a href="https://www.instagram.com/sorvenestudio" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-base-content">Instagram</a><br />
-                <a href="https://www.pinterest.com/sorvene/" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-base-content">Pinterest</a>
+                <a href="https://pin.it/XHAUaCqAA" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-base-content">Pinterest</a>
               </div>
             </div>
           </div>
@@ -318,7 +246,7 @@ export default function BrandPage() {
         <div className={`${styles.fLogo} text-base-content`}>SORvÈNE</div>
         <div className={styles.fSocial}>
           <a href="https://www.instagram.com/sorvenestudio" target="_blank" rel="noopener noreferrer" className="text-base-content/80 hover:text-primary">Instagram</a>
-          <a href="https://www.pinterest.com/sorvene/" target="_blank" rel="noopener noreferrer" className="text-base-content/80 hover:text-primary">Pinterest</a>
+          <a href="https://pin.it/XHAUaCqAA" target="_blank" rel="noopener noreferrer" className="text-base-content/80 hover:text-primary">Pinterest</a>
         </div>
         <div>2026</div>
       </footer>
