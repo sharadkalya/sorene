@@ -9,18 +9,22 @@ export default function ThemeProvider({
   children: React.ReactNode;
   initialTheme?: string;
 }) {
-  // Use useLayoutEffect to apply theme before paint (prevents flash)
-  // This runs synchronously after DOM updates but before browser paint
+  // Apply theme from localStorage if it exists, before first paint
   useLayoutEffect(() => {
     const cachedTheme = localStorage.getItem('theme');
-    const themeToApply = cachedTheme || initialTheme;
-    document.documentElement.setAttribute('data-theme', themeToApply);
+    if (cachedTheme) {
+      // Only update if different from server-rendered theme
+      if (cachedTheme !== initialTheme) {
+        document.documentElement.setAttribute('data-theme', cachedTheme);
+      }
+    } else {
+      // First time visitor - save the server theme to localStorage
+      localStorage.setItem('theme', initialTheme);
+    }
   }, [initialTheme]);
 
   useEffect(() => {
-    const cachedTheme = localStorage.getItem('theme');
-    
-    // Fetch the latest theme from API in the background
+    // Fetch the latest theme from API to sync any changes
     const fetchTheme = async () => {
       try {
         const response = await fetch('/api/settings', {
@@ -29,7 +33,9 @@ export default function ThemeProvider({
         const data = await response.json();
         if (data.success && data.data?.theme) {
           const fetchedTheme = data.data.theme;
-          // Only update if different from cached theme
+          const cachedTheme = localStorage.getItem('theme');
+          
+          // Update if DB theme is different from cached theme
           if (fetchedTheme !== cachedTheme) {
             localStorage.setItem('theme', fetchedTheme);
             document.documentElement.setAttribute('data-theme', fetchedTheme);
