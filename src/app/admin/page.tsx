@@ -92,6 +92,7 @@ export default function AdminDashboard() {
       if (data.success) {
         setPreviewTheme(theme);
         setCurrentTheme(theme);
+        localStorage.setItem('theme', theme);
         document.documentElement.setAttribute('data-theme', theme);
         
         // Dispatch custom event for ThemeProvider

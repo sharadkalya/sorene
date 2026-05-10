@@ -54,7 +54,7 @@ export default async function RootLayout({
   const theme = await getTheme();
   
   return (
-    <html lang="en" className={`${cormorant.variable} ${jost.variable}`} data-theme={theme}>
+    <html lang="en" className={`${cormorant.variable} ${jost.variable}`}>
       <body>
         <ThemeProvider initialTheme={theme}>{children}</ThemeProvider>
       </body>
