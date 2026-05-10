@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SORvÈNE — Quiet Luxury Handbags</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --p:   #faf6ee;
+  --p2:  #f5efe0;
+  --p3:  #ede5d0;
+  --p4:  #e4d8c0;
+  --ln:  #e0d8cc;
+  --ln2: #cfc5b4;
+  --ink: #1a1510;
+  --k2:  #2e2318;
+  --mu:  #9a8e82;
+  --mu2: #b8aa9c;
+  --br:  #6b3518;
+  --br2: #8a4a22;
+  --go:  #b89020;
+  --go2: #c8a030;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background: var(--p);
+  color: var(--ink);
+  font-family: 'Jost', sans-serif;
+  font-weight: 300;
+  overflow-x: hidden;
+}
+
+/* ── CURSOR ── */
+.cur { position:fixed; width:5px; height:5px; background:var(--br); border-radius:50%; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); transition:width .25s,height .25s; }
+.cur-r { position:fixed; width:26px; height:26px; border:1px solid rgba(107,53,24,.28); border-radius:50%; pointer-events:none; z-index:9998; transform:translate(-50%,-50%); transition:width .3s,height .3s,border-color .3s; }
+
+/* ── NAV ── */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:200;
+  display:flex; justify-content:space-between; align-items:center;
+  padding:24px 52px;
+  background:rgba(250,246,238,.92);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid rgba(224,216,204,.4);
+  transition:padding .4s;
+}
+nav.scrolled { padding:16px 52px; }
+.nav-logo { font-family:'Cormorant Garamond',serif; font-size:17px; letter-spacing:.55em; color:var(--ink); font-weight:400; cursor:pointer; }
+.nav-links { display:flex; gap:40px; }
+.nav-links a { font-size:9px; letter-spacing:.3em; text-transform:uppercase; color:var(--mu); text-decoration:none; transition:color .3s; cursor:pointer; }
+.nav-links a:hover { color:var(--br); }
+
+/* ── SCROLL REVEAL ── */
+.reveal {
+  opacity:0; transform:translateY(24px);
+  transition:opacity .8s ease .2s, transform .8s ease .2s;
+}
+.reveal.visible { opacity:1; transform:translateY(0); }
+.reveal.d1 { transition-delay:.4s; }
+.reveal.d2 { transition-delay:.6s; }
+.reveal.d3 { transition-delay:.8s; }
+
+/* ── SPLIT HERO ── */
+.split-hero {
+  position:relative; width:100%; min-height:100vh;
+  display:grid; grid-template-columns:1fr 1fr;
+  align-items:stretch; gap:0;
+  padding-top:80px;
+  background:var(--p);
+}
+
+.hero-video-side {
+  position:relative; overflow:hidden;
+  display:flex; align-items:center; justify-content:center;
+}
+
+.video-frame {
+  width:100%; height:100%;
+  object-fit:cover; object-position:center;
+  animation:fadeUp 1.2s ease .3s both;
+}
+
+.hero-content-side {
+  display:flex; flex-direction:column; align-items:flex-start; justify-content:center;
+  padding:80px 60px;
+  background:var(--p);
+}
+
+.hero-label {
+  font-size:8px; letter-spacing:.55em; text-transform:uppercase;
+  color:var(--go); margin-bottom:24px;
+  animation:fadeUp 1s ease .3s both;
+}
+
+.hero-title {
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(40px,5vw,72px);
+  font-weight:400; letter-spacing:.05em;
+  line-height:1.1; color:var(--ink);
+  margin-bottom:32px;
+  animation:fadeUp 1.2s ease .1s both;
+}
+.hero-title em { font-style:italic; font-weight:300; color:var(--br); }
+
+.hero-text {
+  font-size:14px; color:var(--mu); line-height:2;
+  margin-bottom:40px; max-width:480px;
+  animation:fadeUp 1s ease .7s both;
+}
+.hero-text .highlight { color:var(--br); font-weight:400; }
+
+.hero-cta {
+  animation:fadeUp 1s ease .9s both;
+}
+.btn { display:inline-block; padding:14px 40px; font-size:8px; letter-spacing:.38em; text-transform:uppercase; text-decoration:none; transition:all .4s; cursor:pointer; font-family:'Jost',sans-serif; font-weight:300; border:none; }
+.btn-dark { background:var(--ink); color:var(--p); border:1px solid var(--ink); }
+.btn-dark:hover { background:var(--br); border-color:var(--br); }
+
+/* ── DIVIDER ── */
+.divider {
+  height:1px; background:var(--ln); margin:120px 0;
+}
+
+/* ── SECTION ── */
+section { padding:80px 52px; }
+.sec-label { font-size:8px; letter-spacing:.45em; color:var(--go); text-transform:uppercase; margin-bottom:20px; }
+.sec-title {
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(32px,5vw,64px); font-weight:300; line-height:1.2;
+  color:var(--ink); margin-bottom:36px; max-width:800px;
+}
+.sec-title em { font-style:italic; color:var(--br); }
+
+/* ── ABOUT SECTION ── */
+.about-grid {
+  display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:start;
+  margin-top:60px;
+}
+
+.about-text p {
+  font-size:14px; color:var(--mu); line-height:2; margin-bottom:24px;
+  max-width:520px;
+}
+
+.about-text .p-highlight { color:var(--br); font-weight:400; }
+
+.about-stats {
+  display:flex; flex-direction:column; gap:48px;
+}
+
+.stat {
+  border-left:2px solid var(--br); padding-left:24px;
+}
+
+.stat-num {
+  font-family:'Cormorant Garamond',serif;
+  font-size:36px; font-weight:300; color:var(--br); line-height:1;
+}
+
+.stat-label { font-size:9px; letter-spacing:.3em; text-transform:uppercase; color:var(--mu); margin-top:8px; }
+
+/* ── VALUES SECTION ── */
+.values-grid {
+  display:grid; grid-template-columns:repeat(2,1fr); gap:60px; margin-top:60px;
+}
+
+.value-card {
+  padding:40px; background:transparent; border:1px solid rgba(107,53,24,.15); transition:all .5s;
+}
+
+.value-card:hover {
+  border-color:rgba(107,53,24,.4); background:rgba(250,246,238,.5);
+}
+
+.vc-card-title {
+  font-family:'Cormorant Garamond',serif;
+  font-size:24px; font-weight:300; color:var(--ink); margin-bottom:16px;
+}
+
+.vc-text { font-size:13px; color:var(--mu); line-height:1.8; }
+
+/* ── STAY TUNED SECTION ── */
+.stay-tuned {
+  background:var(--p2); padding:120px 52px;
+  border-top:1px solid var(--ln); border-bottom:1px solid var(--ln);
+}
+
+.st-container {
+  max-width:900px; margin:0 auto;
+}
+
+.st-label { font-size:8px; letter-spacing:.45em; color:var(--go); text-transform:uppercase; margin-bottom:20px; }
+
+.st-title {
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(32px,5vw,64px); font-weight:300; line-height:1.2;
+  color:var(--ink); margin-bottom:24px;
+}
+.st-title em { font-style:italic; color:var(--br); }
+
+.st-subtitle {
+  font-size:14px; color:var(--mu); line-height:2;
+  margin-bottom:60px; max-width:700px;
+}
+
+.st-form {
+  display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:32px;
+}
+
+.st-form-group {
+  display:flex; flex-direction:column;
+}
+
+.st-form-group label { font-size:9px; letter-spacing:.3em; text-transform:uppercase; color:var(--mu); margin-bottom:8px; }
+
+.st-form-group input {
+  padding:14px 16px; background:var(--p); border:1px solid rgba(107,53,24,.2);
+  color:var(--ink); font-family:'Jost',sans-serif; font-size:13px;
+  transition:border-color .3s;
+}
+
+.st-form-group input:focus {
+  outline:none; border-color:var(--br);
+}
+
+.st-btn-group {
+  display:flex; gap:16px; align-items:flex-end;
+}
+
+.btn-interest {
+  flex:1; padding:14px 32px; background:var(--ink); color:var(--p);
+  border:1px solid var(--ink); font-size:8px; letter-spacing:.38em;
+  text-transform:uppercase; font-family:'Jost',sans-serif; font-weight:300;
+  cursor:pointer; transition:all .4s;
+}
+
+.btn-interest:hover {
+  background:var(--br); border-color:var(--br);
+}
+
+.st-offer {
+  padding:32px; background:transparent; border:2px solid var(--br);
+  text-align:center;
+}
+
+.offer-badge {
+  font-size:8px; letter-spacing:.45em; color:var(--go); text-transform:uppercase;
+  margin-bottom:12px; display:block;
+}
+
+.offer-text {
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(20px,3vw,32px); font-weight:300; color:var(--ink);
+  margin-bottom:8px; line-height:1.2;
+}
+
+.offer-code {
+  font-family:'Cormorant Garamond',serif; font-size:24px; font-weight:400;
+  color:var(--br); margin:16px 0; letter-spacing:.1em;
+}
+
+.offer-sub {
+  font-size:11px; color:var(--mu); letter-spacing:.2em; text-transform:uppercase;
+}
+
+/* ── CONTACT SECTION ── */
+.contact-split {
+  display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:start;
+  margin-top:60px;
+}
+
+.contact-info h3 {
+  font-family:'Cormorant Garamond',serif;
+  font-size:24px; font-weight:300; color:var(--ink); margin-bottom:20px; margin-top:40px;
+}
+
+.contact-info h3:first-child { margin-top:0; }
+
+.contact-detail { font-size:13px; color:var(--mu); line-height:1.8; margin-bottom:12px; }
+.contact-detail a { color:var(--br); text-decoration:none; transition:color .3s; }
+.contact-detail a:hover { color:var(--ink); }
+
+.contact-form {
+  display:flex; flex-direction:column; gap:24px;
+}
+
+.form-group {
+  display:flex; flex-direction:column;
+}
+
+.form-group label { font-size:9px; letter-spacing:.3em; text-transform:uppercase; color:var(--mu); margin-bottom:8px; }
+
+.form-group input,
+.form-group textarea {
+  padding:12px 16px; background:transparent;
+  border:1px solid rgba(107,53,24,.2); color:var(--ink); font-family:'Jost',sans-serif;
+  font-size:13px; transition:border-color .3s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline:none; border-color:var(--br);
+}
+
+.form-group textarea { resize:vertical; min-height:120px; }
+
+.submit-btn { width:100%; }
+
+/* ── FOOTER ── */
+footer {
+  padding:60px 52px; border-top:1px solid var(--ln);
+  display:flex; justify-content:space-between; align-items:center;
+  font-size:9px; color:var(--mu); letter-spacing:.2em;
+}
+
+.f-logo { font-family:'Cormorant Garamond',serif; font-size:17px; color:var(--ink); }
+.f-social { display:flex; gap:28px; }
+.f-social a { color:var(--mu); text-decoration:none; transition:color .3s; }
+.f-social a:hover { color:var(--br); }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(24px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+/* ── MOBILE ── */
+@media (max-width:768px) {
+  nav { padding:16px 28px; }
+  .nav-links { gap:20px; }
+  section { padding:60px 28px; }
+  
+  .split-hero {
+    grid-template-columns:1fr; padding-top:80px;
+  }
+  .hero-content-side { padding:60px 28px; }
+  
+  .about-grid, .contact-split { grid-template-columns:1fr; gap:60px; }
+  .values-grid { grid-template-columns:1fr; }
+  
+  .stay-tuned { padding:80px 28px; }
+  .st-form { grid-template-columns:1fr; }
+  .st-btn-group { flex-direction:column; gap:16px; }
+  .btn-interest { width:100%; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- CURSOR -->
+<div class="cur" id="cur"></div>
+<div class="cur-r" id="curR"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-logo" onclick="scrollToSection('hero')">SORvÈNE</div>
+  <div class="nav-links">
+    <a onclick="scrollToSection('about')">About</a>
+    <a onclick="scrollToSection('contact')">Contact</a>
+    <a href="https://www.instagram.com/sorvenestudio" target="_blank">Instagram</a>
+  </div>
+</nav>
+
+<!-- SPLIT HERO -->
+<section id="hero" class="split-hero">
+  <div class="hero-video-side">
+    <video class="video-frame" autoplay muted loop playsinline loading="lazy">
+      <source src="sorvene_video.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  </div>
+  <div class="hero-content-side">
+    <div class="hero-label">SORvÈNE</div>
+    <h1 class="hero-title">Structured <em>Intentionality</em></h1>
+    <p class="hero-text">Structured bags made with <span class="highlight">uncompromising intention</span>. Premium leather, hand-finished, priced fairly. We make very few. Once gone, they're gone.</p>
+    <div class="hero-cta">
+      <a href="https://www.instagram.com/sorvenestudio" target="_blank" class="btn btn-dark">Follow Us</a>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="sec-label reveal">Our Story</div>
+  <h2 class="sec-title reveal">Handbags made <em>the way</em> they should be</h2>
+  
+  <div class="about-grid">
+    <div class="about-text">
+      <p class="reveal">SORvÈNE exists in defiance of excess. We believe true luxury is <span class="p-highlight">not loud</span>. It's quiet, intentional, and earned through craft.</p>
+      
+      <p class="reveal d1">Every bag is crafted from premium full-grain leather and finished by hand. Hardware is antique brass. Interiors are designed for longevity. We make very few pieces, and they're priced at what they should cost — not what marketing inflates them to.</p>
+      
+      <p class="reveal d2">This is not a collection. These are <span class="p-highlight">drops</span>. Finite. Once gone, they're gone. The rarity is part of the product.</p>
+    </div>
+
+    <div class="about-stats">
+      <div class="stat reveal">
+        <div class="stat-num">Drop 01</div>
+        <div class="stat-label">Live Now</div>
+      </div>
+      <div class="stat reveal d1">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">Premium Leather</div>
+      </div>
+      <div class="stat reveal d2">
+        <div class="stat-num">DTC</div>
+        <div class="stat-label">Direct to Consumer</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- VALUES -->
+<section id="values">
+  <div class="sec-label reveal">How We Work</div>
+  <h2 class="sec-title reveal">Three <em>uncompromising</em> principles</h2>
+  
+  <div class="values-grid">
+    <div class="value-card reveal">
+      <div class="vc-card-title">Radical Scarcity</div>
+      <div class="vc-text">Each drop is finite. Once gone, it's gone. No restocks. No sales. We never inflate value with false scarcity — our scarcity is real.</div>
+    </div>
+    <div class="value-card reveal d1">
+      <div class="vc-card-title">Quiet Presence</div>
+      <div class="vc-text">No Instagram noise. No loud campaigns. Those who find us, find us. Discovery is part of the experience. We let the work speak.</div>
+    </div>
+    <div class="value-card reveal d2">
+      <div class="vc-card-title">Deliberate Craft</div>
+      <div class="vc-text">Every detail earns its place. Premium leather. Antique hardware. Hand-finished. We don't compromise, and we don't cut corners.</div>
+    </div>
+    <div class="value-card reveal d3">
+      <div class="vc-card-title">Fair Pricing</div>
+      <div class="vc-text">DTC eliminates middlemen. You pay what the bag is worth — what materials and labor cost. No luxury markup. No artificial inflation.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- STAY TUNED -->
+<section id="stay-tuned" class="stay-tuned">
+  <div class="st-container">
+    <div class="st-label reveal">Next Drop Coming</div>
+    <h2 class="st-title reveal">Stay <em>Tuned</em></h2>
+    <p class="st-subtitle reveal d1">Get exclusive updates about upcoming launches, early access to new drops, and a special coupon just for those who show interest now.</p>
+    
+    <form class="st-form reveal d2" id="interestForm">
+      <div class="st-form-group">
+        <label for="int-name">Your Name</label>
+        <input type="text" id="int-name" name="name" required>
+      </div>
+      <div class="st-form-group">
+        <label for="int-email">Email</label>
+        <input type="email" id="int-email" name="email" required>
+      </div>
+    </form>
+
+    <div class="st-btn-group reveal d3">
+      <button type="submit" form="interestForm" class="btn-interest">Show Interest</button>
+      <div class="st-offer">
+        <span class="offer-badge">Exclusive for Early Supporters</span>
+        <div class="offer-text">Get 15% Off</div>
+        <div class="offer-code">SORVENE15</div>
+        <div class="offer-sub">On Your First Bag</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="sec-label reveal">Get in Touch</div>
+  <h2 class="sec-title reveal">Have questions? We're <em>listening</em></h2>
+  
+  <div class="contact-split">
+    <div>
+      <div class="contact-info">
+        <h3>Email</h3>
+        <div class="contact-detail">
+          <a href="mailto:hello@sorvene.in">hello@sorvene.in</a>
+        </div>
+        
+        <h3>Location</h3>
+        <div class="contact-detail">Maharashtra, India<br>Direct-to-Consumer Only</div>
+        
+        <h3>Follow</h3>
+        <div class="contact-detail">
+          <a href="https://www.instagram.com/sorvenestudio" target="_blank">Instagram</a><br>
+          <a href="https://www.pinterest.com/sorvene/" target="_blank">Pinterest</a>
+        </div>
+      </div>
+    </div>
+
+    <form class="contact-form" id="contactForm">
+      <div class="form-group">
+        <label for="name">Your Name</label>
+        <input type="text" id="name" name="name" required>
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
+      </div>
+      <div class="form-group">
+        <label for="message">Message</label>
+        <textarea id="message" name="message" required></textarea>
+      </div>
+      <button type="submit" class="btn btn-dark submit-btn">Send Message</button>
+    </form>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="f-logo">SORvÈNE</div>
+  <div class="f-social">
+    <a href="https://www.instagram.com/sorvenestudio" target="_blank">Instagram</a>
+    <a href="https://www.pinterest.com/sorvene/" target="_blank">Pinterest</a>
+  </div>
+  <div>2026</div>
+</footer>
+
+<script>
+// Cursor
+const cur = document.getElementById('cur');
+const curR = document.getElementById('curR');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+(function tick(){
+  rx+=(mx-rx)*.12; ry+=(my-ry)*.12;
+  cur.style.cssText=`left:${mx}px;top:${my}px`;
+  curR.style.cssText=`left:${rx}px;top:${ry}px`;
+  requestAnimationFrame(tick);
+})();
+document.querySelectorAll('a,button,input,textarea').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.style.width='3px';cur.style.height='3px';curR.style.width='42px';curR.style.height='42px';curR.style.borderColor='rgba(107,53,24,.45)';});
+  el.addEventListener('mouseleave',()=>{cur.style.width='5px';cur.style.height='5px';curR.style.width='26px';curR.style.height='26px';curR.style.borderColor='rgba(107,53,24,.28)';});
+});
+
+// Nav shrink on scroll
+const nav = document.getElementById('nav');
+window.addEventListener('scroll',()=>{
+  nav.classList.toggle('scrolled', window.scrollY > 80);
+});
+
+// Scroll reveal
+const obs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.classList.add('visible');
+    }
+  });
+},{threshold:0.12});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+// Smooth scroll to sections
+function scrollToSection(id) {
+  const el = document.getElementById(id);
+  if(el) el.scrollIntoView({behavior:'smooth'});
+}
+
+// Interest form submission
+document.getElementById('interestForm').addEventListener('submit', (e)=>{
+  e.preventDefault();
+  const name = document.getElementById('int-name').value;
+  alert(`Thank you, ${name}! We've sent you the exclusive code SORVENE15. Watch your inbox for updates on our next drop.`);
+  e.target.reset();
+});
+
+// Contact form submission
+document.getElementById('contactForm').addEventListener('submit', (e)=>{
+  e.preventDefault();
+  alert('Thank you for reaching out. We will get back to you soon.');
+  e.target.reset();
+});
+</script>
+
+</body>
+</html>
