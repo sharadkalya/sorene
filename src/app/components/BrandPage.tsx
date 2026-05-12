@@ -31,7 +31,7 @@ export default function BrandPage() {
       },
       { threshold: 0.12 }
     );
-    
+
     const revealEls = document.querySelectorAll(`.${styles.reveal}`);
     revealEls.forEach(el => observer.observe(el));
 
@@ -95,27 +95,30 @@ export default function BrandPage() {
       <section id="about" className={styles.aboutSection}>
         <div className={`${styles.secLabel} ${styles.reveal} text-secondary`}>Our Story</div>
         <h2 className={`${styles.secTitle} ${styles.reveal} text-base-content`}>Handbags made <em className="text-primary">the way</em> they should be</h2>
-        
+
         <div className={styles.aboutGrid}>
           <div className={styles.aboutText}>
             <p className={`${styles.reveal} text-base-content/70`}>
               SORvÈNE exists in defiance of excess. We believe true luxury is <span className="text-primary font-normal">not loud</span>. It&apos;s quiet, intentional, and earned through craft.
             </p>
-            
+
             <p className={`${styles.reveal} ${styles.d1} text-base-content/70`}>
-              Every bag is crafted from premium full-grain leather and finished by hand. Interiors are designed for longevity. We make very few pieces, and they&apos;re priced at what they should cost — not what marketing inflates them to.
+              Made from premium-grade vegan leather with careful hand finishing. Interiors are designed for longevity. We make very few pieces, and they&apos;re priced at what they should cost — not what marketing inflates them to.
             </p>
-            
+
             <p className={`${styles.reveal} ${styles.d2} text-base-content/70`}>
-              This is not a collection. These are <span className="text-primary font-normal">drops</span>. Finite. Once gone, they&apos;re gone. The rarity is part of the product.
+              These aren’t collections. They’re <span className="text-primary font-normal">drops</span>— released in limited numbers, made to stand apart.
             </p>
           </div>
 
           <div className={styles.aboutStats}>
             <div className={`${styles.stat} ${styles.reveal} ${styles.d1} border-l-primary`}>
-              <div className={`${styles.statNum} text-primary`}>100%</div>
-              <div className={`${styles.statLabel} text-base-content/60`}>Premium Leather</div>
+              <div className={`${styles.statNum} text-primary`}>Luxury</div>
+              <div className={`${styles.statLabel} text-base-content/60`}>
+                Vegan Leather
+              </div>
             </div>
+
             <div className={`${styles.stat} ${styles.reveal} ${styles.d2} border-l-primary`}>
               <div className={`${styles.statNum} text-primary`}>DTC</div>
               <div className={`${styles.statLabel} text-base-content/60`}>Direct to Consumer</div>
@@ -130,12 +133,12 @@ export default function BrandPage() {
       <section id="values" className={styles.valuesSection}>
         <div className={`${styles.secLabel} ${styles.reveal} text-secondary`}>How We Work</div>
         <h2 className={`${styles.secTitle} ${styles.reveal} text-base-content`}>Three <em className="text-primary">uncompromising</em> principles</h2>
-        
+
         <div className={styles.valuesGrid}>
           <div className={`${styles.valueCard} ${styles.reveal} border-primary/15 hover:border-primary/40`}>
-            <div className={`${styles.vcCardTitle} text-base-content`}>Radical Scarcity</div>
+            <div className={`${styles.vcCardTitle} text-base-content`}>Intentional Drops</div>
             <div className={`${styles.vcText} text-base-content/70`}>
-              Each drop is finite. Once gone, it&apos;s gone. No restocks. No sales. We never inflate value with false scarcity — our scarcity is real.
+              Produced in carefully limited batches with a focus on quality over quantity.
             </div>
           </div>
           <div className={`${styles.valueCard} ${styles.reveal} ${styles.d1} border-primary/15 hover:border-primary/40`}>
@@ -147,7 +150,7 @@ export default function BrandPage() {
           <div className={`${styles.valueCard} ${styles.reveal} ${styles.d2} border-primary/15 hover:border-primary/40`}>
             <div className={`${styles.vcCardTitle} text-base-content`}>Deliberate Craft</div>
             <div className={`${styles.vcText} text-base-content/70`}>
-              Every detail earns its place. Premium leather. Antique hardware. Hand-finished. We don&apos;t compromise, and we don&apos;t cut corners.
+              Every detail is intentional — from premium vegan leather to antique finish hardware and refined hand finishing.
             </div>
           </div>
           <div className={`${styles.valueCard} ${styles.reveal} ${styles.d3} border-primary/15 hover:border-primary/40`}>
@@ -169,7 +172,7 @@ export default function BrandPage() {
           <p className={`${styles.stSubtitle} ${styles.reveal} ${styles.d1} text-base-content/70`}>
             Get exclusive updates about upcoming launches, early access to new drops, and an exclusive discount code sent directly to you.
           </p>
-          
+
           <div className={`${styles.stOffer} ${styles.reveal} ${styles.d2} border-primary`}>
             <span className={`${styles.offerBadge} text-secondary`}>Exclusive for Early Supporters</span>
             <div className={`${styles.offerText} text-base-content`}>Special Discount</div>
@@ -199,7 +202,7 @@ export default function BrandPage() {
       <section id="contact" className={styles.contactSection}>
         <div className={`${styles.secLabel} ${styles.reveal} text-secondary`}>Get in Touch</div>
         <h2 className={`${styles.secTitle} ${styles.reveal} text-base-content`}>Have questions? We&apos;re <em className="text-primary">listening</em></h2>
-        
+
         <div className={styles.contactSplit}>
           <div>
             <div className={styles.contactInfo}>
@@ -207,12 +210,12 @@ export default function BrandPage() {
               <div className={`${styles.contactDetail} text-base-content/70`}>
                 <a href="mailto:hello@sorvene.in" className="text-primary hover:text-base-content">hello@sorvene.in</a>
               </div>
-              
+
               <h3 className="text-base-content">Location</h3>
               <div className={`${styles.contactDetail} text-base-content/70`}>
                 Maharashtra, India<br />Direct-to-Consumer Only
               </div>
-              
+
               <h3 className="text-base-content">Follow</h3>
               <div className={`${styles.contactDetail} text-base-content/70`}>
                 <a href="https://www.instagram.com/sorvenestudio" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-base-content">Instagram</a><br />
