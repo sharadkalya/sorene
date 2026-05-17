@@ -123,9 +123,8 @@
 }
 
 .heroLabel {
-  font-size: 8px;
+  font-size: 12px;
   letter-spacing: 0.55em;
-  text-transform: uppercase;
   margin-bottom: 24px;
   animation: fadeUp 1s ease 0.3s both;
 }
@@ -193,7 +192,7 @@
 }
 
 .secLabel {
-  font-size: 8px;
+  font-size: 12px;
   letter-spacing: 0.45em;
   text-transform: uppercase;
   margin-bottom: 20px;
@@ -301,7 +300,7 @@
 }
 
 .stLabel {
-  font-size: 8px;
+  font-size: 12px;
   letter-spacing: 0.45em;
   text-transform: uppercase;
   margin-bottom: 20px;
