@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import styles from './BrandPage.module.css';
+import StayTunedForm from './StayTunedForm';
 
 export default function BrandPage() {
   const navRef = useRef<HTMLElement>(null);
@@ -40,14 +41,6 @@ export default function BrandPage() {
       revealEls.forEach(el => observer.unobserve(el));
     };
   }, []);
-
-  const handleInterestSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const name = formData.get('name');
-    alert(`Thank you, ${name}! We've sent you an exclusive discount code to your email. Watch your inbox for updates on our next drop.`);
-    e.currentTarget.reset();
-  };
 
   const handleContactSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -176,20 +169,7 @@ export default function BrandPage() {
             <div className={`${styles.offerSub} text-base-content/60`}>Code sent to your email</div>
           </div>
 
-          <form className={`${styles.stForm} ${styles.reveal} ${styles.d2}`} id="interestForm" onSubmit={handleInterestSubmit}>
-            <div className={styles.stFormGroup}>
-              <label htmlFor="int-name" className="text-base-content/70">Your Name</label>
-              <input type="text" id="int-name" name="name" required className="bg-base-100 border-primary/20 text-base-content focus:border-primary" />
-            </div>
-            <div className={styles.stFormGroup}>
-              <label htmlFor="int-email" className="text-base-content/70">Email</label>
-              <input type="email" id="int-email" name="email" required className="bg-base-100 border-primary/20 text-base-content focus:border-primary" />
-            </div>
-          </form>
-
-          <button type="submit" form="interestForm" className={`${styles.btnInterest} ${styles.reveal} ${styles.d3} bg-base-content text-base-100 border-base-content hover:bg-primary hover:border-primary`}>
-            Show Interest
-          </button>
+          <StayTunedForm />
         </div>
       </section>
 
