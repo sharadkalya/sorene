@@ -6,14 +6,14 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export interface SendStayTunedEmailParams {
   name: string;
   email: string;
+  discountCode: string;
 }
 
 /**
  * Send a stay tuned email with exclusive discount code to interested users
  */
-export async function sendStayTunedEmail({ name, email }: SendStayTunedEmailParams) {
+export async function sendStayTunedEmail({ name, email, discountCode }: SendStayTunedEmailParams) {
   try {
-    const discountCode = generateDiscountCode();
     const emailDomain = process.env.EMAIL_DOMAIN || 'sorvenestudio.com';
     
     const { data, error } = await resend.emails.send({
@@ -33,15 +33,6 @@ export async function sendStayTunedEmail({ name, email }: SendStayTunedEmailPara
     console.error('Error in sendStayTunedEmail:', error);
     throw error;
   }
-}
-
-/**
- * Generate a unique discount code for the user
- */
-function generateDiscountCode(): string {
-  const prefix = 'SORVENE';
-  const randomNum = 1009;
-  return `${prefix}${randomNum}`;
 }
 
 /**

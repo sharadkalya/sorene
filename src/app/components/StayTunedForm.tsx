@@ -116,7 +116,7 @@ export default function StayTunedForm({ onSuccess }: StayTunedFormProps) {
     <>
       <form 
         id="stay-tuned-form"
-        className={`${styles.stForm} ${styles.reveal} ${styles.d2}`} 
+        className={styles.stForm} 
         onSubmit={handleSubmit}
       >
         <div className={styles.stFormGroup}>
@@ -155,7 +155,7 @@ export default function StayTunedForm({ onSuccess }: StayTunedFormProps) {
         type="submit"
         form="stay-tuned-form"
         disabled={isLoading}
-        className={`${styles.btnInterest} ${styles.reveal} ${styles.d3} bg-base-content text-base-100 border-base-content hover:bg-primary hover:border-primary disabled:opacity-50 disabled:cursor-not-allowed`}
+        className={`${styles.btnInterest} bg-base-content text-base-100 border-base-content hover:bg-primary hover:border-primary disabled:opacity-50 disabled:cursor-not-allowed`}
       >
         {isLoading ? (
           <>

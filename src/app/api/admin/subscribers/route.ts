@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
       name: sub.name,
       email: sub.email,
       count: sub.count,
+      discountCode: sub.discountCode,
       createdAt: sub.createdAt?.toISOString() || '',
       updatedAt: sub.updatedAt?.toISOString() || '',
     }));

@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 export interface ISubscriber {
   name: string;
   email: string;
+  discountCode: string;
   count: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -27,6 +28,10 @@ const SubscriberSchema = new mongoose.Schema<ISubscriber>(
         /^\S+@\S+\.\S+$/,
         'Please provide a valid email address',
       ],
+    },
+    discountCode: {
+        type: String,
+        required: true,
     },
     count: {
       type: Number,

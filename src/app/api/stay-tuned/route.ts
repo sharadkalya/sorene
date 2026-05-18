@@ -14,6 +14,15 @@ export interface StayTunedResponse {
 }
 
 /**
+ * Generate a unique discount code for the user
+ */
+function generateDiscountCode(): string {
+  const prefix = 'SORVENE';
+  const randomNum = 1009;
+  return `${prefix}${randomNum}`;
+}
+
+/**
  * POST /api/stay-tuned
  * Handle stay tuned form submissions and send email
  */
@@ -56,11 +65,13 @@ export async function POST(request: NextRequest) {
     const trimmedName = name.trim();
 
     let subscriber = await Subscriber.findOne({ email: trimmedEmail });
+    const discountCode = generateDiscountCode();
 
     if (subscriber) {
       // Update existing subscriber - increment count and update name
       subscriber.count += 1;
       subscriber.name = trimmedName; // Update name in case it changed
+      subscriber.discountCode = discountCode;
       await subscriber.save();
     } else {
       // Create new subscriber
@@ -68,6 +79,7 @@ export async function POST(request: NextRequest) {
         name: trimmedName,
         email: trimmedEmail,
         count: 1,
+        discountCode,
       });
     }
 
@@ -75,6 +87,7 @@ export async function POST(request: NextRequest) {
     await sendStayTunedEmail({
       name: trimmedName,
       email: trimmedEmail,
+      discountCode
     });
 
     return NextResponse.json(
