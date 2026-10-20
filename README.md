@@ -30,9 +30,32 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `src/app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses the [Geist](https://vercel.com/font) font family via the [`geist`](https://www.npmjs.com/package/geist) npm package.
+```bash
+yarn dev            # start the dev server
+yarn build          # production build
+yarn start          # serve the production build
+yarn lint           # ESLint
+yarn typecheck      # TypeScript (tsc --noEmit)
+yarn test           # Vitest (run once)
+yarn test:watch     # Vitest watch mode
+yarn test:coverage  # Vitest coverage report
+```
+
+## Engineering standards
+
+AI coding agents must follow `AGENTS.md`. Architecture and conventions are
+documented in `docs/architecture.md`, `docs/tree-structure.md`,
+`docs/testing.md`, and `docs/security.md`.
+
+## Stack
+
+- **Next.js 16** (App Router, Turbopack), React 19, TypeScript
+- **DaisyUI 5 + Tailwind CSS 3** for the UI
+- **Mongoose + MongoDB Atlas** for persistence
+- **Resend** for transactional email
+- **Zod** for validation, **Vitest** for testing
 
 ## Learn More
 

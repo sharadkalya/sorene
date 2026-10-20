@@ -33,7 +33,26 @@
     
     --color-error: oklch(45% 0.1 30);           /* #8a4a22 dark brown */
     --color-error-content: oklch(96.5% 0.015 80);
+
+    /* daisyUI 5 structural variables (not derived from colors) */
+    --radius-selector: 0.5rem;
+    --radius-field: 0.25rem;
+    --radius-box: 0.5rem;
+    --size-selector: 0.25rem;
+    --size-field: 0.25rem;
+    --border: 1px;
+    --depth: 1;
+    --noise: 0;
   }
+}
+
+/* Form control borders: daisyUI 5 defaults them to a 20% base-content tint,
+   which is nearly invisible on the cream sorvene theme. Use a solid, clearly
+   visible border color (linen base-300). */
+.input,
+.select,
+.textarea {
+  --input-color: var(--color-base-300);
 }
 
 *, *::before, *::after {

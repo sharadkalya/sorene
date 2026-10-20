@@ -1,86 +1,44 @@
 # MongoDB Setup Instructions
 
-## ✅ What's Been Set Up
+The application uses **Mongoose** with a single shared connection managed by
+`src/backend/integrations/database/connection.ts`.
 
-1. **MongoDB Packages Installed**
-   - `mongodb` - Official MongoDB driver
-   - `mongoose` - ODM for MongoDB
+## 1. Get your connection string
 
-2. **Files Created**
-   - `/src/lib/mongodb.ts` - MongoDB connection utility
-   - `/src/models/User.ts` - User model/schema
-   - `/src/app/api/users/route.ts` - API routes for GET all & POST
-   - `/src/app/api/users/[id]/route.ts` - API routes for GET, PUT, DELETE
-   - `/src/app/test-mongoconnection/crud/page.tsx` - CRUD UI page
-   - `/.env.local` - Environment variables file (needs your connection string)
-
-## 🔧 Setup Steps
-
-### 1. Get Your MongoDB Connection String
-
-1. Go to [MongoDB Atlas](https://cloud.mongodb.com/)
-2. Click on your cluster's **"Connect"** button
-3. Choose **"Connect your application"**
-4. Select **"Node.js"** as the driver
-5. Copy the connection string (looks like this):
+1. Go to [MongoDB Atlas](https://cloud.mongodb.com/).
+2. Click your cluster's **"Connect"** button → **"Connect your application"** → **"Node.js"**.
+3. Copy the connection string and add a database name before the query string:
    ```
-   mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority
+   mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/sorvene?retryWrites=true&w=majority
    ```
 
-### 2. Configure Your .env.local File
+## 2. Configure `.env.local`
 
-1. Open `/.env.local` in your project
-2. Replace the empty `MONGODB_URI=` with your connection string:
-   ```env
-   MONGODB_URI=mongodb+srv://youruser:yourpassword@cluster0.xxxxx.mongodb.net/sorvene?retryWrites=true&w=majority
-   ```
-   
-   **Important:**
-   - Replace `<username>` with your MongoDB database user
-   - Replace `<password>` with your MongoDB database password
-   - Add a database name (e.g., `sorvene`) before the `?` in the URL
+Copy `.env.example` to `.env.local` and set `MONGODB_URI` (plus the other
+variables listed in `.env.example`). Then restart the dev server.
 
-### 3. Test the Connection
+## 3. Verify the connection
 
-1. Start your development server:
-   ```bash
-   yarn dev
-   ```
+```bash
+yarn dev
+```
 
-2. Visit: [http://localhost:3000/test-mongoconnection/crud](http://localhost:3000/test-mongoconnection/crud)
+- The storefront `/` reads the active theme from the `SiteSettings` collection.
+- Submitting the stay-tuned form (`POST /api/stay-tuned`) writes a `Subscriber`
+  document; admins can review them at `/admin/subscribers`.
 
-3. Try creating, reading, updating, and deleting users!
+## Collections & models
 
-## 📝 API Endpoints Available
+| Collection | Model | Purpose |
+| --- | --- | --- |
+| `subscribers` | `backend/integrations/database/models/Subscriber.ts` | Stay-tuned interest + discount codes |
+| `sitesettings` | `backend/integrations/database/models/SiteSettings.ts` | Active theme |
 
-- `GET /api/users` - Get all users
-- `POST /api/users` - Create a new user
-- `GET /api/users/[id]` - Get a single user
-- `PUT /api/users/[id]` - Update a user
-- `DELETE /api/users/[id]` - Delete a user
+## Troubleshooting
 
-## 🔍 Troubleshooting
+- **"MONGODB_URI not defined"**: create `.env.local`, set the variable, restart.
+- **Connection refused**: check Atlas network access (allow your IP, or `0.0.0.0/0` for serverless).
+- **Theme falls back to `sorvene`**: check the connection string and Vercel/Atlas logs; the app deliberately falls back to the default theme instead of crashing.
 
-**"MONGODB_URI not defined" error:**
-- Make sure `.env.local` file exists in the root directory
-- Restart your dev server after adding the connection string
+See `DEPLOYMENT.md` and `docs/security.md` for production guidance.
 
-**Connection refused:**
-- Check your MongoDB Atlas network access (allow your IP address)
-- Verify your username and password are correct
-- Make sure you're using the database user credentials, not your Atlas account
-
-**"User validation failed":**
-- Username must be 2-50 characters
-- Username must be unique
-
-## 🎯 What You Can Do Now
-
-Visit `/test-mongoconnection/crud` to:
-- ✅ Create new users
-- ✅ View all users in a table
-- ✅ Edit existing users
-- ✅ Delete users
-- ✅ See real-time updates
-
-The page uses daisyUI components for a nice UI and handles all CRUD operations!

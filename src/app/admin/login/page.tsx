@@ -7,19 +7,34 @@ export default function AdminLogin() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
-    // Hardcoded credentials (case-sensitive)
-    if (username === 'sorveneAdmin' && password === 'sorvenePassword') {
-      // Store authentication in localStorage
-      localStorage.setItem('adminAuth', 'true');
-      router.push('/admin');
-    } else {
-      setError('Invalid username or password');
+    try {
+      const response = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        router.push('/admin');
+        router.refresh();
+        return;
+      }
+
+      setError(data?.error?.message || 'Invalid username or password');
+    } catch {
+      setError('Unable to sign in. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -29,29 +44,25 @@ export default function AdminLogin() {
         <div className="card-body">
           <h2 className="card-title text-2xl font-bold mb-4">Admin Login</h2>
           
-          <form onSubmit={handleSubmit}>
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Username</span>
-              </label>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-medium">Username</span>
               <input
                 type="text"
                 placeholder="Enter username"
-                className="input input-bordered"
+                className="input w-full"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
               />
             </div>
 
-            <div className="form-control mt-4">
-              <label className="label">
-                <span className="label-text">Password</span>
-              </label>
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-medium">Password</span>
               <input
                 type="password"
                 placeholder="Enter password"
-                className="input input-bordered"
+                className="input w-full"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -59,21 +70,15 @@ export default function AdminLogin() {
             </div>
 
             {error && (
-              <div className="alert alert-error mt-4">
+              <div className="alert alert-error">
                 <span>{error}</span>
               </div>
             )}
 
-            <div className="form-control mt-6">
-              <button type="submit" className="btn btn-primary">
-                Login
-              </button>
-            </div>
+            <button type="submit" className="btn btn-primary w-full" disabled={loading}>
+              {loading ? <span className="loading loading-spinner loading-sm"></span> : 'Login'}
+            </button>
           </form>
-
-          <div className="mt-4 text-sm text-base-content/60">
-            <p>Credentials are case-sensitive</p>
-          </div>
         </div>
       </div>
     </div>

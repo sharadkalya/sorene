@@ -7,6 +7,13 @@ This application requires the following environment variables to be set:
 ### Required Variables
 
 - `MONGODB_URI` - MongoDB Atlas connection string
+- `ADMIN_SESSION_SECRET` - Long random secret used to sign the admin session cookie (`openssl rand -base64 32`)
+
+### Optional / Feature Variables
+
+- `RESEND_API_KEY` - Resend API key; required for the stay-tuned email to send
+- `EMAIL_DOMAIN` - Domain used for outbound email (defaults to `sorvenestudio.com`)
+- `ADMIN_USERNAME` / `ADMIN_PASSWORD` - Admin login credentials. If either is unset, admin login is disabled.
 
 ### Local Development
 
@@ -102,4 +109,4 @@ This happens because Vercel's servers aren't allowed to access your MongoDB Atla
 
 **Theme resets on every deploy:**
 - This is normal - the app will fetch the saved theme from MongoDB after deployment
-- If you want a specific default theme, update the fallback value in `src/app/layout.tsx`
+- If you want a specific default theme, update the fallback value in `src/backend/features/settings/settings.service.ts`

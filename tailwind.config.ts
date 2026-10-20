@@ -1,45 +1,18 @@
 import type { Config } from 'tailwindcss';
+import daisyui from 'daisyui';
+import { THEMES } from './src/common/themes';
 
 const config: Config = {
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/frontend/**/*.{js,ts,jsx,tsx,mdx}',
   ],
-  plugins: [require('daisyui')],
+  plugins: [daisyui],
   daisyui: {
-    themes: [
-      'sorvene',  // Custom theme defined in globals.css
-      'light',
-      'dark',
-      'cupcake',
-      'bumblebee',
-      'emerald',
-      'corporate',
-      'synthwave',
-      'retro',
-      'cyberpunk',
-      'valentine',
-      'halloween',
-      'garden',
-      'forest',
-      'aqua',
-      'lofi',
-      'pastel',
-      'fantasy',
-      'wireframe',
-      'black',
-      'luxury',
-      'dracula',
-      'cmyk',
-      'autumn',
-      'business',
-      'acid',
-      'lemonade',
-      'night',
-      'coffee',
-      'winter',
-    ],
+    // Single source of truth shared with the theme settings API and admin UI.
+    themes: THEMES,
   },
 };
 
