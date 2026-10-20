@@ -46,19 +46,50 @@
   }
 }
 
-/* Form control borders: daisyUI 5 defaults them to a 20% base-content tint,
-   which is nearly invisible on the cream sorvene theme. Use a solid, clearly
-   visible border color (linen base-300). */
-.input,
-.select,
-.textarea {
-  --input-color: var(--color-base-300);
+/* Hide the native clear button on search inputs — we render our own. */
+input[type='search']::-webkit-search-cancel-button,
+input[type='search']::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+/* daisyUI 5 emits its component styles inside cascade layers, but under
+   Tailwind v3 + this build those layers lose to the un-layered preflight above
+   (border: 0, color: inherit, padding: 0). Re-assert the essentials un-layered
+   so form controls and buttons render consistently. */
+.input,
+.select,
+.textarea {
+  --input-color: color-mix(in oklab, var(--color-primary) 55%, var(--color-base-100));
+  border: 1px solid var(--input-color);
+  padding-inline: 0.75rem;
+}
+
+.input:focus,
+.input:focus-within,
+.select:focus,
+.textarea:focus,
+.textarea:focus-within {
+  --input-color: var(--color-base-content);
+}
+
+.btn {
+  color: var(--btn-fg);
+  background-color: var(--btn-bg);
+  border-width: var(--border);
+  border-color: var(--btn-border);
+  font-size: var(--fontsize, 0.875rem);
+  font-weight: 600;
+}
+
+.btn:not(.btn-square, .btn-circle) {
+  padding-inline: var(--btn-p);
 }
 
 html {

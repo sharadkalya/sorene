@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import Button from '@/frontend/components/Button';
 
 interface ImageUploaderProps {
   images: string[];
@@ -70,23 +71,27 @@ export default function ImageUploader({ images, onChange, max = 12 }: ImageUploa
               alt="Uploaded"
               className="w-20 h-20 object-cover rounded-lg border border-base-300"
             />
-            <button
+            <Button
               type="button"
               onClick={() => removeImage(image)}
-              className="btn btn-error btn-xs btn-circle absolute -top-2 -right-2"
+              variant="error"
+              size="xs"
+              shape="circle"
+              className="absolute -top-2 -right-2"
               aria-label="Remove image"
             >
               ✕
-            </button>
+            </Button>
           </div>
         ))}
 
         {images.length < max && (
-          <button
+          <Button
             type="button"
             onClick={() => inputRef.current?.click()}
             disabled={uploading}
-            className="btn btn-outline h-20 w-20 flex-col gap-1"
+            variant="outline"
+            className="h-20 w-20 flex-col gap-1"
           >
             {uploading ? (
               <span className="loading loading-spinner loading-sm"></span>
@@ -96,7 +101,7 @@ export default function ImageUploader({ images, onChange, max = 12 }: ImageUploa
                 <span className="text-xs">Upload</span>
               </>
             )}
-          </button>
+          </Button>
         )}
       </div>
 

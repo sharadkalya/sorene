@@ -2,7 +2,11 @@
 
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Button from '@/frontend/components/Button';
+import Select from '@/frontend/components/Select';
+import TextInput from '@/frontend/components/TextInput';
 import ProductCard, { type StorefrontProduct } from './ProductCard';
+import { formatPrice } from './format';
 
 interface FacetItem {
   id: string;
@@ -63,7 +67,6 @@ export default function ProductListing(props: ProductListingProps) {
   const router = useRouter();
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  const searchRef = useRef<HTMLInputElement>(null);
   const minRef = useRef<HTMLInputElement>(null);
   const maxRef = useRef<HTMLInputElement>(null);
 
@@ -112,7 +115,6 @@ export default function ProductListing(props: ProductListingProps) {
     push({ collections: next });
   };
 
-  const applySearch = () => push({ q: searchRef.current?.value ?? '' });
   const applyPrice = () => push({ minPrice: minRef.current?.value ?? '', maxPrice: maxRef.current?.value ?? '' });
 
   const activeFilterCount =
@@ -142,9 +144,9 @@ export default function ProductListing(props: ProductListingProps) {
       )}
 
       <div className="lg:hidden mb-4 flex items-center justify-between">
-        <button onClick={() => setFiltersOpen((open) => !open)} className="btn btn-outline btn-sm">
+        <Button onClick={() => setFiltersOpen((open) => !open)} variant="outline" size="sm">
           {filtersOpen ? 'Hide Filters' : 'Show Filters'}
-        </button>
+        </Button>
         <span className="text-sm text-base-content/60">{catalog.products.length} products</span>
       </div>
 
@@ -152,23 +154,7 @@ export default function ProductListing(props: ProductListingProps) {
         {/* Filters */}
         <aside className={`${filtersOpen ? 'block' : 'hidden'} lg:block lg:col-span-1`}>
           <div className="space-y-6 sticky top-24">
-            <div className="flex flex-col gap-2">
-              <span className="text-sm font-medium">Search</span>
-              <div className="join w-full">
-                <input
-                  ref={searchRef}
-                  type="text"
-                  defaultValue={q}
-                  placeholder="Search products"
-                  className="input input-sm join-item w-full"
-                />
-                <button onClick={applySearch} className="btn btn-primary btn-sm join-item">
-                  Go
-                </button>
-              </div>
-            </div>
-
-            {!lockedCategorySlug && (
+            {!lockedCategorySlug && catalog.categories.length > 0 && (
               <div>
                 <h3 className="font-semibold mb-2">Category</h3>
                 <div className="space-y-1 max-h-56 overflow-y-auto">
@@ -186,14 +172,11 @@ export default function ProductListing(props: ProductListingProps) {
                       </span>
                     </label>
                   ))}
-                  {catalog.categories.length === 0 && (
-                    <p className="text-sm text-base-content/50">No categories yet.</p>
-                  )}
                 </div>
               </div>
             )}
 
-            {!lockedCollectionSlug && (
+            {!lockedCollectionSlug && catalog.collections.length > 0 && (
               <div>
                 <h3 className="font-semibold mb-2">Collection</h3>
                 <div className="space-y-1 max-h-56 overflow-y-auto">
@@ -211,44 +194,41 @@ export default function ProductListing(props: ProductListingProps) {
                       </span>
                     </label>
                   ))}
-                  {catalog.collections.length === 0 && (
-                    <p className="text-sm text-base-content/50">No collections yet.</p>
-                  )}
                 </div>
               </div>
             )}
 
             <div>
               <h3 className="font-semibold mb-2">Price</h3>
-              <div className="flex gap-2">
-                <input
+              <div className="flex gap-3">
+                <TextInput
                   ref={minRef}
+                  size="sm"
                   type="number"
                   min="0"
                   step="1"
                   defaultValue={minPrice !== undefined ? String(minPrice) : ''}
                   placeholder="Min"
-                  className="input input-sm w-full"
                 />
-                <input
+                <TextInput
                   ref={maxRef}
+                  size="sm"
                   type="number"
                   min="0"
                   step="1"
                   defaultValue={maxPrice !== undefined ? String(maxPrice) : ''}
                   placeholder="Max"
-                  className="input input-sm w-full"
                 />
               </div>
-              <button onClick={applyPrice} className="btn btn-outline btn-xs mt-2">
+              <Button onClick={applyPrice} variant="outline" size="xs" className="mt-2">
                 Apply
-              </button>
+              </Button>
             </div>
 
             {activeFilterCount > 0 && (
-              <button onClick={() => router.push(basePath)} className="btn btn-ghost btn-xs text-error">
+              <Button onClick={() => router.push(basePath)} variant="ghost" size="xs" className="text-error">
                 Clear all filters
-              </button>
+              </Button>
             )}
           </div>
         </aside>
@@ -259,28 +239,83 @@ export default function ProductListing(props: ProductListingProps) {
             <span className="text-sm text-base-content/60 hidden lg:inline">
               {catalog.products.length} product{catalog.products.length === 1 ? '' : 's'}
             </span>
-            <select
+            <Select
               value={sort}
               onChange={(event) => push({ sort: event.target.value })}
-              className="select select-sm"
+              aria-label="Sort products"
             >
               {SORT_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
-          {catalog.products.length === 0 ? (
-            <div className="card bg-base-100 border border-base-300">
-              <div className="card-body text-center py-20">
-                <p className="text-base-content/60">No products match your filters.</p>
-                <button onClick={() => router.push(basePath)} className="btn btn-outline btn-sm mx-auto">
-                  Clear filters
+          {activeFilterCount > 0 && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {selectedCategorySlugs.map((slug) => {
+                const category = catalog.categories.find((entry) => entry.slug === slug);
+                return (
+                  <button
+                    key={`category-${slug}`}
+                    onClick={() => toggleCategory(slug)}
+                    className="badge badge-outline gap-1 py-3"
+                  >
+                    {category?.name ?? slug} ✕
+                  </button>
+                );
+              })}
+              {selectedCollectionSlugs.map((slug) => {
+                const collection = catalog.collections.find((entry) => entry.slug === slug);
+                return (
+                  <button
+                    key={`collection-${slug}`}
+                    onClick={() => toggleCollection(slug)}
+                    className="badge badge-outline gap-1 py-3"
+                  >
+                    {collection?.name ?? slug} ✕
+                  </button>
+                );
+              })}
+              {q && (
+                <button onClick={() => push({ q: '' })} className="badge badge-outline gap-1 py-3">
+                  “{q}” ✕
                 </button>
-              </div>
+              )}
+              {(minPrice !== undefined || maxPrice !== undefined) && (
+                <button
+                  onClick={() => push({ minPrice: '', maxPrice: '' })}
+                  className="badge badge-outline gap-1 py-3"
+                >
+                  {minPrice !== undefined ? formatPrice(minPrice) : 'Any'} –{' '}
+                  {maxPrice !== undefined ? formatPrice(maxPrice) : 'Any'} ✕
+                </button>
+              )}
             </div>
+          )}
+
+          {catalog.products.length === 0 ? (
+            activeFilterCount > 0 ? (
+              <div className="card bg-base-100 border border-base-300">
+                <div className="card-body items-center text-center py-16 gap-3">
+                  <p className="text-base-content/60">No products match your filters.</p>
+                  <Button onClick={() => router.push(basePath)} variant="outline" size="sm">
+                    Clear filters
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="card bg-base-100 border border-base-300">
+                <div className="card-body items-center text-center py-16 gap-3">
+                  <p className="font-medium">The new collection is arriving soon.</p>
+                  <p className="text-base-content/60">We&apos;re curating our first drop — check back shortly.</p>
+                  <Button href="/" variant="primary" size="sm" className="mt-2">
+                    Back to home
+                  </Button>
+                </div>
+              </div>
+            )
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
               {catalog.products.map((product) => (

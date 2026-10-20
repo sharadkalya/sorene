@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import Button from '@/frontend/components/Button';
+import TextInput from '@/frontend/components/TextInput';
 import ImageUploader from './ImageUploader';
 
 interface TaxonomyItem {
@@ -138,9 +140,9 @@ export default function TaxonomyManager({ kind, initialItems }: TaxonomyManagerP
           <h1 className="text-3xl font-bold">{label}s</h1>
           <p className="text-base-content/70">Organize products into {label.toLowerCase()}s.</p>
         </div>
-        <button onClick={openCreate} className="btn btn-primary">
+        <Button onClick={openCreate} variant="primary">
           + Add {label}
-        </button>
+        </Button>
       </div>
 
       {error && <div className="alert alert-error mb-4"><span>{error}</span></div>}
@@ -191,12 +193,12 @@ export default function TaxonomyManager({ kind, initialItems }: TaxonomyManagerP
                     </td>
                     <td>
                       <div className="flex gap-1 justify-end">
-                        <button onClick={() => openEdit(item)} className="btn btn-ghost btn-xs">
+                        <Button onClick={() => openEdit(item)} variant="ghost" size="xs">
                           Edit
-                        </button>
-                        <button onClick={() => setDeleting(item)} className="btn btn-ghost btn-xs text-error">
+                        </Button>
+                        <Button onClick={() => setDeleting(item)} variant="ghost" size="xs" className="text-error">
                           Delete
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -218,9 +220,8 @@ export default function TaxonomyManager({ kind, initialItems }: TaxonomyManagerP
             <div className="space-y-4">
               <div className="flex flex-col gap-2">
                 <span className="text-sm font-medium">Name</span>
-                <input
+                <TextInput
                   type="text"
-                  className="input w-full"
                   value={form.name}
                   onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
                   placeholder={`${label} name`}
@@ -259,12 +260,12 @@ export default function TaxonomyManager({ kind, initialItems }: TaxonomyManagerP
             </div>
 
             <div className="modal-action gap-2">
-              <button onClick={closeModal} className="btn btn-outline">
+              <Button onClick={closeModal} variant="outline">
                 Cancel
-              </button>
-              <button onClick={handleSave} className="btn btn-primary" disabled={saving}>
+              </Button>
+              <Button onClick={handleSave} variant="primary" disabled={saving}>
                 {saving ? <span className="loading loading-spinner loading-sm"></span> : 'Save'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -279,12 +280,12 @@ export default function TaxonomyManager({ kind, initialItems }: TaxonomyManagerP
               “{deleting.name}” will be removed and unlinked from all products. This cannot be undone.
             </p>
             <div className="modal-action gap-2">
-              <button onClick={() => setDeleting(null)} className="btn btn-outline">
+              <Button onClick={() => setDeleting(null)} variant="outline">
                 Cancel
-              </button>
-              <button onClick={handleDelete} className="btn btn-error" disabled={saving}>
+              </Button>
+              <Button onClick={handleDelete} variant="error" disabled={saving}>
                 {saving ? <span className="loading loading-spinner loading-sm"></span> : 'Delete'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

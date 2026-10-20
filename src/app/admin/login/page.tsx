@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Button from '@/frontend/components/Button';
+import TextInput from '@/frontend/components/TextInput';
 
 export default function AdminLogin() {
   const [username, setUsername] = useState('');
@@ -47,10 +49,9 @@ export default function AdminLogin() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex flex-col gap-2">
               <span className="text-sm font-medium">Username</span>
-              <input
+              <TextInput
                 type="text"
                 placeholder="Enter username"
-                className="input w-full"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
@@ -59,10 +60,9 @@ export default function AdminLogin() {
 
             <div className="flex flex-col gap-2">
               <span className="text-sm font-medium">Password</span>
-              <input
+              <TextInput
                 type="password"
                 placeholder="Enter password"
-                className="input w-full"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -75,9 +75,9 @@ export default function AdminLogin() {
               </div>
             )}
 
-            <button type="submit" className="btn btn-primary w-full" disabled={loading}>
+            <Button type="submit" variant="primary" className="w-full" disabled={loading}>
               {loading ? <span className="loading loading-spinner loading-sm"></span> : 'Login'}
-            </button>
+            </Button>
           </form>
         </div>
       </div>

@@ -101,16 +101,17 @@
 .heroVideoSide {
   position: relative;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  min-height: 60vh;
 }
 
 .videoFrame {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
+  position: absolute;
+  top: 0;
+  left: 52px;
+  width: calc(100% - 52px);
+  height: calc(100% - 48px);
+  object-fit: contain;
+  object-position: left center;
   animation: fadeUp 1.2s ease 0.3s both;
 }
 
@@ -581,6 +582,14 @@
   .splitHero {
     grid-template-columns: 1fr;
     padding-top: 80px;
+  }
+  
+  .videoFrame {
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    object-position: center;
   }
   
   .heroContentSide {

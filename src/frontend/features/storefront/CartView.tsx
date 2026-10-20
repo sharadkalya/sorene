@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/frontend/store/hooks';
+import Button from '@/frontend/components/Button';
 import {
   clearCart,
   removeItem,
@@ -24,9 +25,9 @@ export default function CartView() {
       <div className="max-w-3xl mx-auto px-4 py-20 text-center">
         <h1 className="text-3xl font-semibold mb-4">Your Cart</h1>
         <p className="text-base-content/60 mb-6">Your cart is empty.</p>
-        <Link href="/shop" className="btn btn-primary">
+        <Button href="/shop" variant="primary">
           Start Shopping
-        </Link>
+        </Button>
       </div>
     );
   }
@@ -35,9 +36,9 @@ export default function CartView() {
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-semibold">Your Cart</h1>
-        <button onClick={() => dispatch(clearCart())} className="btn btn-ghost btn-sm text-error">
+        <Button onClick={() => dispatch(clearCart())} variant="ghost" size="sm" className="text-error">
           Clear cart
-        </button>
+        </Button>
       </div>
 
       {notice && (
@@ -72,30 +73,36 @@ export default function CartView() {
 
               <div className="flex items-center gap-4">
                 <div className="join">
-                  <button
-                    className="btn btn-xs btn-outline join-item"
+                  <Button
+                    size="xs"
+                    variant="outline"
+                    className="join-item"
                     onClick={() => dispatch(setQuantity({ slug: item.slug, quantity: item.quantity - 1 }))}
                   >
                     −
-                  </button>
+                  </Button>
                   <span className="join-item px-3 py-1 text-sm">{item.quantity}</span>
-                  <button
-                    className="btn btn-xs btn-outline join-item"
+                  <Button
+                    size="xs"
+                    variant="outline"
+                    className="join-item"
                     onClick={() => dispatch(setQuantity({ slug: item.slug, quantity: item.quantity + 1 }))}
                   >
                     +
-                  </button>
+                  </Button>
                 </div>
                 <span className="font-semibold w-24 text-right">
                   {formatPrice(item.price * item.quantity)}
                 </span>
-                <button
+                <Button
                   onClick={() => dispatch(removeItem(item.slug))}
-                  className="btn btn-ghost btn-xs text-error"
+                  variant="ghost"
+                  size="xs"
+                  className="text-error"
                   aria-label={`Remove ${item.name}`}
                 >
                   ✕
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -110,12 +117,12 @@ export default function CartView() {
           </div>
           <p className="text-sm text-base-content/60">Shipping and taxes calculated at checkout.</p>
           <div className="card-actions justify-end mt-4">
-            <Link href="/shop" className="btn btn-outline">
+            <Button href="/shop" variant="outline">
               Continue Shopping
-            </Link>
-            <button onClick={() => setNotice(true)} className="btn btn-primary">
+            </Button>
+            <Button onClick={() => setNotice(true)} variant="primary">
               Proceed to Checkout
-            </button>
+            </Button>
           </div>
         </div>
       </div>

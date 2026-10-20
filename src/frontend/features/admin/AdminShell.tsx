@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import Button from '@/frontend/components/Button';
 
 const NAV_ITEMS = [
   { href: '/admin', label: 'Dashboard' },
@@ -39,24 +40,26 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             {NAV_ITEMS.map((item) => {
               const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
               return (
-                <Link
+                <Button
                   key={item.href}
                   href={item.href}
-                  className={`btn btn-ghost btn-sm ${active ? 'btn-active text-primary' : ''}`}
+                  variant="ghost"
+                  size="sm"
+                  className={active ? 'btn-active text-primary' : ''}
                 >
                   {item.label}
-                </Link>
+                </Button>
               );
             })}
           </nav>
         </div>
         <div className="flex-none px-6 gap-2 flex items-center">
-          <Link href="/" className="btn btn-ghost btn-sm">
+          <Button href="/" variant="ghost" size="sm">
             Back to Site
-          </Link>
-          <button onClick={handleLogout} className="btn btn-error btn-sm">
+          </Button>
+          <Button onClick={handleLogout} variant="error" size="sm">
             Logout
-          </button>
+          </Button>
         </div>
       </div>
 

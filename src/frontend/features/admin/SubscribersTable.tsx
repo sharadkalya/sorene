@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Button from '@/frontend/components/Button';
 
 interface Subscriber {
     id: string;
@@ -43,9 +44,9 @@ export default function SubscribersTable({
                             Total Subscribers: {subscribers.length}
                         </p>
                     </div>
-                    <button onClick={handleRefresh} className="btn btn-primary">
+                    <Button onClick={handleRefresh} variant="primary">
                         Refresh
-                    </button>
+                    </Button>
                 </div>
 
                 {/* Stats Cards */}

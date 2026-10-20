@@ -4,7 +4,11 @@ import { useEffect, useRef } from 'react';
 import styles from './BrandPage.module.css';
 import StayTunedForm from './StayTunedForm';
 
-export default function BrandPage() {
+interface BrandPageProps {
+  videoSrc?: string;
+}
+
+export default function BrandPage({ videoSrc = '/assets/videos/SV_2.mp4' }: BrandPageProps) {
   const navRef = useRef<HTMLElement>(null);
 
   const scrollToSection = (id: string) => {
@@ -64,8 +68,8 @@ export default function BrandPage() {
       {/* SPLIT HERO */}
       <section id="hero" className={`${styles.splitHero} bg-base-100`}>
         <div className={styles.heroVideoSide}>
-          <video className={styles.videoFrame} autoPlay muted loop playsInline>
-            <source src="/assets/videos/SV_2.mp4" type="video/mp4" />
+          <video className={styles.videoFrame} autoPlay muted loop playsInline preload="auto">
+            <source src={videoSrc} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
         </div>

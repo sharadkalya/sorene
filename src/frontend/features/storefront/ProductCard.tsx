@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useAppDispatch } from '@/frontend/store/hooks';
 import { addItem } from '@/frontend/store/slices/cart.slice';
+import Button from '@/frontend/components/Button';
 import { formatPrice } from './format';
 
 export interface StorefrontProduct {
@@ -60,9 +61,9 @@ export default function ProductCard({ product }: ProductCardProps) {
             </span>
           )}
         </div>
-        <button onClick={handleAdd} className="btn btn-outline btn-sm mt-1">
+        <Button onClick={handleAdd} variant="outline" size="sm" className="mt-1">
           Add to Cart
-        </button>
+        </Button>
       </div>
     </div>
   );

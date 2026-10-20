@@ -11,6 +11,7 @@ import 'yet-another-react-lightbox/plugins/thumbnails.css';
 
 import { useAppDispatch } from '@/frontend/store/hooks';
 import { addItem } from '@/frontend/store/slices/cart.slice';
+import Button from '@/frontend/components/Button';
 import ProductCard, { type StorefrontProduct } from './ProductCard';
 import { formatPrice } from './format';
 
@@ -150,25 +151,27 @@ export default function ProductDetail({ product, related }: ProductDetailProps) 
 
           <div className="mt-6 flex items-center gap-3">
             <div className="join">
-              <button
-                className="btn btn-outline join-item"
+              <Button
+                variant="outline"
+                className="join-item"
                 onClick={() => setQuantity((qty) => Math.max(1, qty - 1))}
                 aria-label="Decrease quantity"
               >
                 −
-              </button>
+              </Button>
               <span className="join-item px-4 flex items-center">{quantity}</span>
-              <button
-                className="btn btn-outline join-item"
+              <Button
+                variant="outline"
+                className="join-item"
                 onClick={() => setQuantity((qty) => qty + 1)}
                 aria-label="Increase quantity"
               >
                 +
-              </button>
+              </Button>
             </div>
-            <button onClick={handleAdd} className="btn btn-primary flex-1">
+            <Button onClick={handleAdd} variant="primary" className="flex-1">
               Add to Cart
-            </button>
+            </Button>
           </div>
 
           <div className="divider my-6">Details</div>

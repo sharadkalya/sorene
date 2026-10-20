@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { THEMES } from '@/common/themes';
+import Button from '@/frontend/components/Button';
 
 export default function AdminDashboard({ initialTheme }: { initialTheme: string }) {
   const [currentTheme, setCurrentTheme] = useState(initialTheme);
@@ -62,12 +63,14 @@ export default function AdminDashboard({ initialTheme }: { initialTheme: string 
               )}
             </svg>
             <span>{message.text}</span>
-            <button 
-              onClick={() => setMessage(null)} 
-              className="btn btn-sm btn-ghost btn-circle"
+            <Button
+              onClick={() => setMessage(null)}
+              variant="ghost"
+              size="sm"
+              shape="circle"
             >
               ✕
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -99,22 +102,19 @@ export default function AdminDashboard({ initialTheme }: { initialTheme: string 
             {/* Theme Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
               {THEMES.map((theme) => (
-                <button
+                <Button
                   key={theme}
                   onClick={() => handleThemeChange(theme)}
                   onMouseEnter={() => setPreviewTheme(theme)}
                   onMouseLeave={() => setPreviewTheme(currentTheme)}
                   disabled={saving}
-                  className={`btn ${
-                    currentTheme === theme 
-                      ? 'btn-primary' 
-                      : 'btn-outline btn-neutral'
-                  } h-auto py-4 normal-case transition-all ${
+                  variant={currentTheme === theme ? 'primary' : 'outline'}
+                  className={`${currentTheme === theme ? '' : 'btn-neutral'} h-auto py-4 normal-case transition-all ${
                     saving ? 'opacity-50' : 'hover:scale-105'
                   }`}
                 >
                   <span className="capitalize text-sm">{theme}</span>
-                </button>
+                </Button>
               ))}
             </div>
 

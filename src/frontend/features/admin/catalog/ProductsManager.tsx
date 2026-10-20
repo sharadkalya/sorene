@@ -1,6 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import Button from '@/frontend/components/Button';
+import Select from '@/frontend/components/Select';
+import TextInput from '@/frontend/components/TextInput';
 import ImageUploader from './ImageUploader';
 
 interface CategoryRef {
@@ -183,9 +186,9 @@ export default function ProductsManager({
           <h1 className="text-3xl font-bold">Products</h1>
           <p className="text-base-content/70">Manage your catalog, prices, and imagery.</p>
         </div>
-        <button onClick={openCreate} className="btn btn-primary">
+        <Button onClick={openCreate} variant="primary">
           + Add Product
-        </button>
+        </Button>
       </div>
 
       {error && <div className="alert alert-error mb-4"><span>{error}</span></div>}
@@ -250,12 +253,12 @@ export default function ProductsManager({
                     </td>
                     <td>
                       <div className="flex gap-1 justify-end">
-                        <button onClick={() => openEdit(product)} className="btn btn-ghost btn-xs">
+                        <Button onClick={() => openEdit(product)} variant="ghost" size="xs">
                           Edit
-                        </button>
-                        <button onClick={() => setDeleting(product)} className="btn btn-ghost btn-xs text-error">
+                        </Button>
+                        <Button onClick={() => setDeleting(product)} variant="ghost" size="xs" className="text-error">
                           Delete
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -276,9 +279,8 @@ export default function ProductsManager({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
                   <span className="text-sm font-medium">Name</span>
-                  <input
+                  <TextInput
                     type="text"
-                    className="input w-full"
                     value={form.name}
                     onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
                     placeholder="Product name"
@@ -287,8 +289,8 @@ export default function ProductsManager({
 
                 <div className="flex flex-col gap-2">
                   <span className="text-sm font-medium">Status</span>
-                  <select
-                    className="select w-full"
+                  <Select
+                    className="w-full"
                     value={form.status}
                     onChange={(event) =>
                       setForm((prev) => ({ ...prev, status: event.target.value as 'draft' | 'active' }))
@@ -296,16 +298,15 @@ export default function ProductsManager({
                   >
                     <option value="draft">Draft</option>
                     <option value="active">Active</option>
-                  </select>
+                  </Select>
                 </div>
 
                 <div className="flex flex-col gap-2">
                   <span className="text-sm font-medium">Price (USD)</span>
-                  <input
+                  <TextInput
                     type="number"
                     min="0"
                     step="0.01"
-                    className="input w-full"
                     value={form.price}
                     onChange={(event) => setForm((prev) => ({ ...prev, price: event.target.value }))}
                     placeholder="0.00"
@@ -314,11 +315,10 @@ export default function ProductsManager({
 
                 <div className="flex flex-col gap-2">
                   <span className="text-sm font-medium">Compare-at price (optional)</span>
-                  <input
+                  <TextInput
                     type="number"
                     min="0"
                     step="0.01"
-                    className="input w-full"
                     value={form.compareAtPrice}
                     onChange={(event) => setForm((prev) => ({ ...prev, compareAtPrice: event.target.value }))}
                     placeholder="Original price"
@@ -404,12 +404,12 @@ export default function ProductsManager({
             </div>
 
             <div className="modal-action gap-2">
-              <button onClick={closeModal} className="btn btn-outline">
+              <Button onClick={closeModal} variant="outline">
                 Cancel
-              </button>
-              <button onClick={handleSave} className="btn btn-primary" disabled={saving}>
+              </Button>
+              <Button onClick={handleSave} variant="primary" disabled={saving}>
                 {saving ? <span className="loading loading-spinner loading-sm"></span> : 'Save'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -424,12 +424,12 @@ export default function ProductsManager({
               “{deleting.name}” will be permanently removed. This cannot be undone.
             </p>
             <div className="modal-action gap-2">
-              <button onClick={() => setDeleting(null)} className="btn btn-outline">
+              <Button onClick={() => setDeleting(null)} variant="outline">
                 Cancel
-              </button>
-              <button onClick={handleDelete} className="btn btn-error" disabled={saving}>
+              </Button>
+              <Button onClick={handleDelete} variant="error" disabled={saving}>
                 {saving ? <span className="loading loading-spinner loading-sm"></span> : 'Delete'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
