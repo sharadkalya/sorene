@@ -1,17 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
 import { useAppSelector } from '@/frontend/store/hooks';
+import { useIsClient } from '@/frontend/hooks/useIsClient';
 import { selectCartCount } from '@/frontend/store/slices/cart.slice';
-import CartDrawer from './CartDrawer';
 import CatalogSearch from './CatalogSearch';
 import Button from '@/frontend/components/Button';
 
-/** Storefront navigation: brand, shop links, and a cart drawer trigger. */
+/** Storefront navigation: brand, shop links, and a cart link. */
 export default function StoreHeader() {
   const count = useAppSelector(selectCartCount);
-  const [cartOpen, setCartOpen] = useState(false);
+  const isClient = useIsClient();
 
   return (
     <>
@@ -63,11 +62,11 @@ export default function StoreHeader() {
             </div>
 
             <Button
-              onClick={() => setCartOpen(true)}
+              href="/cart"
               variant="ghost"
               shape="square"
               className="relative"
-              aria-label="Open cart"
+              aria-label="View cart"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -77,15 +76,13 @@ export default function StoreHeader() {
                   d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
                 />
               </svg>
-              {count > 0 && (
+              {isClient && count > 0 && (
                 <span className="badge badge-primary badge-sm absolute -top-1 -right-1">{count}</span>
               )}
             </Button>
           </div>
         </div>
       </header>
-
-      <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
     </>
   );
 }

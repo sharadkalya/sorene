@@ -9,9 +9,20 @@
 - Authorization is enforced **server-side** on every protected route (`requireAdminApi`) and page (`requireAdminPage` + the `(protected)` route-group layout).
 - Client-side checks (e.g. redirects) are UX only and are not a security boundary.
 
+**Customers** authenticate with a WhatsApp-delivered OTP. `POST /api/customer/otp/request`
+generates a 6-digit code, stores only its HMAC hash (keyed by `CUSTOMER_SESSION_SECRET`), and
+sends it via a Meta `authentication` template; `POST /api/customer/otp/verify` checks it in
+constant time (5-minute TTL, 30s resend cooldown, 5 attempts, one active code per phone) and
+mints an HMAC-SHA256-signed, HttpOnly, SameSite=Lax session cookie (`sorvene_customer_session`,
+30-day TTL). The Firebase integration (`backend/integrations/firebase/admin.ts`) is kept but
+currently unused. Customer-only endpoints use `requireCustomerApi`; the client never chooses
+its own identity.
+
 ## Resource ownership & tenant isolation
 
-- No authenticated-customer resources exist yet. When they do: establish the principal server-side, scope every query to that principal, verify ownership per resource, and add negative tests proving cross-user access is denied.
+- Customer resources (addresses) are scoped to the authenticated principal: handlers resolve the
+  customer from the session cookie (`requireCustomerApi`) and pass that `customerId` to the
+  service — never a client-supplied id.
 - Never accept user/tenant IDs from the client as the identity.
 
 ## Secret management
@@ -33,6 +44,13 @@
 - For browser uploads, generate presigned URLs server-side; validate file type/size/ownership server-side; never let clients choose arbitrary object keys.
 - Separate public product media from private customer/admin files; the public media base URL (`R2_PUBLIC_URL`) is configurable per environment.
 
+## WhatsApp (Meta Cloud API)
+
+- Credentials (`WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`) are server-only env vars read via `common/env.ts`. The Graph host is fixed in code; callers cannot supply URLs, tokens, or sender IDs.
+- `GET /api/status/whatsapp?to=` is admin-only, rate-limited (5/min overall, 3 per recipient/10 min), refuses cross-site browser requests (`Sec-Fetch-Site`), and only ever sends the `hello_world` template. Recipients are validated/normalized to E.164 digits.
+- `POST /api/webhooks/whatsapp` verifies `X-Hub-Signature-256` (HMAC-SHA256, raw body, `WHATSAPP_APP_SECRET`, constant-time) before parsing; `GET` verifies `WHATSAPP_VERIFY_TOKEN` in constant time. Both fail closed when unconfigured.
+- Provider error bodies are logged server-side only; phone numbers are masked in logs and responses. See `docs/whatsapp.md`.
+
 ## Error handling & logging
 
 - Clients receive consistent, non-leaking errors via `jsonError` — no stack traces, DB internals, or provider responses.
@@ -53,6 +71,13 @@
 | `POST /api/admin/logout` | none (clears cookie) |
 | `GET /api/settings` | public (theme is not secret) |
 | `POST /api/stay-tuned` | public (rate-limit as abuse control) |
+| `POST /api/customer/otp/request` | public (rate-limited) |
+| `POST /api/customer/otp/verify` | public (rate-limited + attempt-limited) |
+| `DELETE /api/customer/session` | none (clears cookie) |
+| `GET /api/status/whatsapp` | Admin session (+ rate limit) |
+| `GET`/`POST /api/webhooks/whatsapp` | public; verify token (GET) / Meta HMAC signature (POST) |
+| `GET /api/customer/me` | Customer session |
+| `POST /api/customer/addresses` | Customer session |
 | `GET /`, admin pages | `/admin` and `/admin/subscribers` require admin session |
 
 ## Dependency & configuration hygiene

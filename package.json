@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": ">=20.0.0",
+    "node": ">=22.0.0",
     "npm": ">=10.0.0"
   },
   "scripts": {
@@ -19,6 +19,8 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1152.0",
     "@reduxjs/toolkit": "^2.13.0",
+    "firebase": "^13",
+    "firebase-admin": "^14",
     "geist": "^1.7.0",
     "mongoose": "^9.6.2",
     "next": "16.2.4",

@@ -112,6 +112,60 @@ Indexes: `{ slug: 1 }` (unique), `{ status: 1, featured: -1, createdAt: -1 }`.
 The service validates that every `categories`/`collections` id exists before persisting, so
 products cannot reference a deleted taxonomy.
 
+## Customer
+
+File: `src/backend/integrations/database/models/Customer.ts`
+Collection: `customers`
+Repository: `src/backend/features/customer/customer.repository.ts`
+
+Storefront shopper, identified by their phone number (E.164). Created during checkout when a
+WhatsApp-delivered OTP is first verified (`POST /api/customer/otp/verify`).
+
+| Field | Type | Constraints |
+| --- | --- | --- |
+| `phone` | `String` | required, unique, trimmed; E.164 (e.g. `+919876543210`) |
+| `name` | `String` | optional, trimmed |
+| `addresses` | `[Address]` | default `[]`; shipping addresses as subdocuments (see below) |
+| `createdAt` / `updatedAt` | `Date` | from `timestamps: true` |
+
+Address subdocument (`_id` is generated per address):
+
+| Field | Type | Constraints |
+| --- | --- | --- |
+| `fullName` | `String` | required, trimmed |
+| `phone` | `String` | required, trimmed |
+| `line1` | `String` | required, trimmed |
+| `line2` | `String` | optional, default `''` |
+| `city` | `String` | required, trimmed |
+| `state` | `String` | required, trimmed |
+| `pincode` | `String` | required, trimmed |
+
+Indexes: `{ phone: 1 }` (also enforces uniqueness).
+
+Persistence is an atomic upsert (`findOneAndUpdate` with `upsert: true`) keyed on `phone`,
+so concurrent first-time sign-ins for the same number cannot race into a duplicate-key error.
+Addresses are appended with `$push`; the newest address is the last element.
+
+## OtpChallenge
+
+File: `src/backend/integrations/database/models/OtpChallenge.ts`
+Collection: `otpchallenges`
+Repository: `src/backend/features/customer/otp.repository.ts`
+
+Short-lived challenge for WhatsApp OTP sign-in. One active challenge per phone; the code is
+stored only as an HMAC hash (keyed by `CUSTOMER_SESSION_SECRET`), never in plaintext.
+
+| Field | Type | Constraints |
+| --- | --- | --- |
+| `phone` | `String` | required, unique, trimmed; E.164 |
+| `codeHash` | `String` | required; HMAC-SHA256 hash of `phone:code` |
+| `attempts` | `Number` | default `0`; incremented per wrong code, capped at 5 by the service |
+| `expiresAt` | `Date` | required; TTL index (`expireAfterSeconds: 0`) auto-deletes expired rows |
+| `lastSentAt` | `Date` | required; drives the 30s resend cooldown |
+| `createdAt` / `updatedAt` | `Date` | from `timestamps: true` |
+
+Indexes: `{ phone: 1 }` (unique — one active code per number), `{ expiresAt: 1 }` TTL.
+
 ## Adding a new model
 
 1. Define the schema in `backend/integrations/database/models/<Name>.ts`, exporting the

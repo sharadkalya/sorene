@@ -96,7 +96,7 @@ Cover edge cases (invalid/missing input, wrong-identity access, conflicts, failu
 - Adding a dependency requires a concrete need. No competing libraries for the same job (already: Zod for validation, Vitest for testing, Resend for email, Mongoose for data access).
 - New env vars must be added to `.env.example` with a placeholder and a one-line description, and documented in `docs/security.md` / `DEPLOYMENT.md` as appropriate.
 - Required config is read through `src/common/env.ts` and fails fast with a clear message at first use.
-- Node 20+; package manager is Yarn 1 (`yarn.lock`).
+- Node 22+; package manager is Yarn 1 (`yarn.lock`).
 
 ## 8. Refactoring & review
 

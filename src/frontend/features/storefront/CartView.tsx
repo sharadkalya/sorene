@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/frontend/store/hooks';
+import { useIsClient } from '@/frontend/hooks/useIsClient';
 import Button from '@/frontend/components/Button';
 import {
   clearCart,
@@ -18,7 +18,11 @@ export default function CartView() {
   const items = useAppSelector(selectCartItems);
   const subtotal = useAppSelector(selectCartSubtotal);
   const dispatch = useAppDispatch();
-  const [notice, setNotice] = useState(false);
+  const isClient = useIsClient();
+
+  if (!isClient) {
+    return <div className="max-w-4xl mx-auto px-4 py-8" aria-hidden="true" />;
+  }
 
   if (items.length === 0) {
     return (
@@ -40,14 +44,6 @@ export default function CartView() {
           Clear cart
         </Button>
       </div>
-
-      {notice && (
-        <div className="toast toast-top toast-end z-50">
-          <div className="alert alert-info shadow-lg">
-            <span>Checkout is not available yet in this preview.</span>
-          </div>
-        </div>
-      )}
 
       <div className="space-y-4">
         {items.map((item) => (
@@ -120,8 +116,8 @@ export default function CartView() {
             <Button href="/shop" variant="outline">
               Continue Shopping
             </Button>
-            <Button onClick={() => setNotice(true)} variant="primary">
-              Proceed to Checkout
+            <Button href="/checkout" variant="primary">
+              Proceed to Buy
             </Button>
           </div>
         </div>

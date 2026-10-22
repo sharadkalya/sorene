@@ -46,6 +46,8 @@ sorene/
     │       ├── stay-tuned/route.ts       # Public interest form
     │       ├── settings/route.ts         # GET public / PUT admin
     │       ├── status/r2/route.ts        # Admin R2 health check (upload/delete)
+    │       ├── status/whatsapp/route.ts  # Admin WhatsApp test send (hello_world template)
+    │       ├── webhooks/whatsapp/route.ts # Meta webhook (verify + signed status updates)
     │       └── admin/
     │           ├── login/route.ts        # Credential check + session
     │           ├── logout/route.ts
@@ -59,12 +61,14 @@ sorene/
     │   ├── features/
     │   │   ├── subscribers/      # types, validation, repository, service
     │   │   ├── settings/         # validation, repository, service
-    │   │   └── catalog/          # types, validation, repository, service, slug
+    │   │   ├── catalog/          # types, validation, repository, service, slug
+    │   │   └── whatsapp/         # types, validation, service (test send, webhook)
     │   └── integrations/
     │       ├── database/
     │       │   ├── connection.ts         # Shared Mongoose connection
     │       │   └── models/               # Subscriber, SiteSettings, Category, Collection, Product
     │       ├── email/            # email-client + stay-tuned-template
+    │       ├── whatsapp/         # Cloud API client + webhook signature check
     │       └── storage/
     │           ├── r2-client.ts          # S3 client for Cloudflare R2
     │           └── r2-storage.ts         # Put/Delete/upload + health check
@@ -75,7 +79,7 @@ sorene/
     │   ├── components/           # BrandPage, StayTunedForm, ThemeProvider
     │   ├── features/
     │   │   ├── admin/            # AdminShell, AdminDashboard, SubscribersTable, catalog/*
-    │   │   └── storefront/       # StoreHeader, ProductCard, ProductListing, ProductDetail, CartDrawer, CartView, TaxonomyGrid
+    │   │   └── storefront/       # StoreHeader, ProductCard, ProductListing, ProductDetail, CartView, TaxonomyGrid
     │   └── store/                # Redux Toolkit (store, hooks, provider, cart slice)
     └── types/
         └── daisyui.d.ts          # Ambient type for daisyui (ships no types)

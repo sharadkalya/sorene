@@ -10,6 +10,9 @@ describe('AppError', () => {
     expect(new AppError('CONFLICT', 'no').status).toBe(409);
     expect(new AppError('RATE_LIMITED', 'slow').status).toBe(429);
     expect(new AppError('INTERNAL_ERROR', 'boom').status).toBe(500);
+    expect(new AppError('UPSTREAM_ERROR', 'bad gateway').status).toBe(502);
+    expect(new AppError('SERVICE_UNAVAILABLE', 'off').status).toBe(503);
+    expect(new AppError('UPSTREAM_TIMEOUT', 'slow').status).toBe(504);
   });
 
   it('preserves the original cause for internal diagnostics', () => {

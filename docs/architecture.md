@@ -78,6 +78,7 @@ Client-side checks are UX only — they can never grant access.
 - Provider clients are initialized lazily; config comes from `common/env.ts`; errors are normalized.
 - Business code calls small typed functions (`sendStayTunedEmail`, `checkStorageHealth`) — never the SDK directly.
 - R2 is accessed through the S3-compatible API; see `integrations/storage/`.
+- WhatsApp (Meta Cloud API) lives in `integrations/whatsapp/` + `features/whatsapp/`; see `docs/whatsapp.md`.
 
 ## State management
 

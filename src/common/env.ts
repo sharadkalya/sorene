@@ -69,6 +69,64 @@ export function getR2PublicUrl(): string {
   return readRequired('R2_PUBLIC_URL');
 }
 
+/** Secret used to sign customer session cookies. */
+export function getCustomerSessionSecret(): string {
+  return readRequired('CUSTOMER_SESSION_SECRET');
+}
+
+/** Firebase project ID used by the Admin SDK to verify phone-auth tokens. */
+export function getFirebaseProjectId(): string {
+  const value =
+    process.env.FIREBASE_PROJECT_ID?.trim() || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID?.trim();
+  if (!value) {
+    throw new Error('Missing required environment variable: FIREBASE_PROJECT_ID');
+  }
+  return value;
+}
+
+/** Firebase service-account client email used by the Admin SDK. */
+export function getFirebaseClientEmail(): string {
+  return readRequired('FIREBASE_CLIENT_EMAIL');
+}
+
+/** Firebase service-account private key used by the Admin SDK. */
+export function getFirebasePrivateKey(): string {
+  return readRequired('FIREBASE_PRIVATE_KEY');
+}
+
+/** WhatsApp Cloud API permanent/system-user access token. */
+export function getWhatsAppAccessToken(): string {
+  return readRequired('WHATSAPP_ACCESS_TOKEN');
+}
+
+/** ID of the WhatsApp sender phone number (Meta test number in development). */
+export function getWhatsAppPhoneNumberId(): string {
+  const value = readRequired('WHATSAPP_PHONE_NUMBER_ID').trim();
+  if (!/^\d{5,25}$/.test(value)) {
+    throw new Error('Invalid WHATSAPP_PHONE_NUMBER_ID: expected a numeric ID');
+  }
+  return value;
+}
+
+/** App secret used to verify `X-Hub-Signature-256` on WhatsApp webhooks. */
+export function getWhatsAppAppSecret(): string {
+  return readRequired('WHATSAPP_APP_SECRET');
+}
+
+/** Token Meta echoes back during webhook subscription verification. */
+export function getWhatsAppVerifyToken(): string {
+  return readRequired('WHATSAPP_VERIFY_TOKEN');
+}
+
+/** Graph API version, e.g. `v23.0`. The value is never echoed in errors. */
+export function getWhatsAppApiVersion(): string {
+  const value = readRequired('WHATSAPP_API_VERSION').trim();
+  if (!/^v\d{1,3}\.\d{1,2}$/.test(value)) {
+    throw new Error('Invalid WHATSAPP_API_VERSION: expected a Graph API version like "v23.0"');
+  }
+  return value;
+}
+
 /** True during the Next.js production build phase. */
 export function isBuildPhase(): boolean {
   return process.env.NEXT_PHASE === 'phase-production-build';

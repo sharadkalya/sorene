@@ -12,7 +12,10 @@ export type AppErrorCode =
   | 'NOT_FOUND'
   | 'CONFLICT'
   | 'RATE_LIMITED'
-  | 'INTERNAL_ERROR';
+  | 'INTERNAL_ERROR'
+  | 'UPSTREAM_ERROR'
+  | 'SERVICE_UNAVAILABLE'
+  | 'UPSTREAM_TIMEOUT';
 
 const STATUS_BY_CODE: Record<AppErrorCode, number> = {
   VALIDATION_ERROR: 400,
@@ -22,6 +25,9 @@ const STATUS_BY_CODE: Record<AppErrorCode, number> = {
   CONFLICT: 409,
   RATE_LIMITED: 429,
   INTERNAL_ERROR: 500,
+  UPSTREAM_ERROR: 502,
+  SERVICE_UNAVAILABLE: 503,
+  UPSTREAM_TIMEOUT: 504,
 };
 
 export class AppError extends Error {
