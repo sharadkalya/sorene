@@ -79,8 +79,8 @@ describe('requestOtp', () => {
 
     expect(sendWhatsAppMessageMock).toHaveBeenCalledWith(PHONE, {
       type: 'template',
-      name: 'sorvene_otp',
-      languageCode: 'en_US',
+      name: 'sorveneotp',
+      languageCode: 'en',
       parameters: ['123456'],
     });
     expect(upsertOtpChallengeMock).toHaveBeenCalledWith({

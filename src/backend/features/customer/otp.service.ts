@@ -21,8 +21,8 @@ import { formatIssues, otpRequestSchema, otpVerifySchema } from './otp.validatio
  * cooldown, 5 verify attempts, constant-time comparison, and one-time use.
  */
 
-export const OTP_TEMPLATE_NAME = 'sorvene_otp';
-const OTP_TEMPLATE_LANGUAGE = 'en_US';
+export const OTP_TEMPLATE_NAME = 'sorveneotp';
+const OTP_TEMPLATE_LANGUAGE = 'en';
 const OTP_TTL_MS = 5 * 60 * 1000;
 const RESEND_COOLDOWN_MS = 30 * 1000;
 const MAX_ATTEMPTS = 5;
