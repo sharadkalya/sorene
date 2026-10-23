@@ -12,6 +12,8 @@ import 'yet-another-react-lightbox/plugins/thumbnails.css';
 import { useAppDispatch } from '@/frontend/store/hooks';
 import { addItem } from '@/frontend/store/slices/cart.slice';
 import Button from '@/frontend/components/Button';
+import Badge from '@/frontend/components/Badge';
+import { useWishlistToggle } from '@/frontend/features/wishlist/useWishlistToggle';
 import ProductCard, { type StorefrontProduct } from './ProductCard';
 import { formatPrice } from './format';
 
@@ -30,6 +32,8 @@ interface ProductDetailData {
   images: string[];
   categories: FacetItem[];
   collections: FacetItem[];
+  materialInfo?: string;
+  manufacturingInfo?: string;
 }
 
 interface ProductDetailProps {
@@ -43,6 +47,13 @@ export default function ProductDetail({ product, related }: ProductDetailProps) 
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const { wishlisted, toggle, busy } = useWishlistToggle({
+    slug: product.slug,
+    name: product.name,
+    price: product.price,
+    compareAtPrice: product.compareAtPrice,
+    image: product.images[0] ?? '',
+  });
 
   const slides = product.images.map((src) => ({ src }));
   const savings =
@@ -121,7 +132,7 @@ export default function ProductDetail({ product, related }: ProductDetailProps) 
                 <span className="text-lg text-base-content/50 line-through">
                   {formatPrice(product.compareAtPrice)}
                 </span>
-                <span className="badge badge-secondary">{savings}% off</span>
+                <Badge variant="secondary">{savings}% off</Badge>
               </>
             )}
           </div>
@@ -129,22 +140,14 @@ export default function ProductDetail({ product, related }: ProductDetailProps) 
           {(product.categories.length > 0 || product.collections.length > 0) && (
             <div className="flex flex-wrap gap-2 mt-4">
               {product.categories.map((category) => (
-                <Link
-                  key={category.id}
-                  href={`/shop/categories/${category.slug}`}
-                  className="badge badge-outline"
-                >
+                <Badge key={category.id} as="a" href={`/shop/categories/${category.slug}`} variant="outline">
                   {category.name}
-                </Link>
+                </Badge>
               ))}
               {product.collections.map((collection) => (
-                <Link
-                  key={collection.id}
-                  href={`/shop/collections/${collection.slug}`}
-                  className="badge badge-outline"
-                >
+                <Badge key={collection.id} as="a" href={`/shop/collections/${collection.slug}`} variant="outline">
                   {collection.name}
-                </Link>
+                </Badge>
               ))}
             </div>
           )}
@@ -172,10 +175,56 @@ export default function ProductDetail({ product, related }: ProductDetailProps) 
             <Button onClick={handleAdd} variant="primary" className="flex-1">
               Add to Cart
             </Button>
+            <Button
+              onClick={toggle}
+              variant="ghost"
+              shape="circle"
+              disabled={busy}
+              aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+            >
+              {busy ? (
+                <span className="loading loading-spinner loading-sm" />
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={`h-5 w-5 ${wishlisted ? 'text-primary' : ''}`}
+                  fill={wishlisted ? 'currentColor' : 'none'}
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                  />
+                </svg>
+              )}
+            </Button>
           </div>
 
           <div className="divider my-6">Details</div>
           <p className="text-base-content/80 whitespace-pre-line leading-relaxed">{product.description}</p>
+
+          {(product.materialInfo || product.manufacturingInfo) && (
+            <div className="card bg-base-200/50 border border-base-300 mt-6">
+              <div className="card-body gap-4">
+                <h2 className="text-lg font-semibold">Material & care</h2>
+                {product.materialInfo && (
+                  <div>
+                    <p className="text-sm font-medium mb-1">Material</p>
+                    <p className="text-sm text-base-content/70 whitespace-pre-line">{product.materialInfo}</p>
+                  </div>
+                )}
+                {product.manufacturingInfo && (
+                  <div>
+                    <p className="text-sm font-medium mb-1">Manufacturing</p>
+                    <p className="text-sm text-base-content/70 whitespace-pre-line">{product.manufacturingInfo}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

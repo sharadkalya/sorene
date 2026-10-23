@@ -105,6 +105,9 @@ Storefront product. References `categories` and `collections` as many-to-many Ob
 | `collections` | `[ObjectId ref Collection]` | default `[]`; many-to-many |
 | `status` | `String` | enum `draft` / `active`, default `draft`; only `active` is shown on the storefront |
 | `featured` | `Boolean` | default `false`; featured-first default sort |
+| `materialInfo` | `String` | optional, default `''`, ≤500; shown on the product detail page |
+| `manufacturingInfo` | `String` | optional, default `''`, ≤500; shown on the product detail page |
+| `stockQuantity` | `Number` | default `0`, ≥0 integer; internal-only — never returned by storefront APIs |
 | `createdAt` / `updatedAt` | `Date` | from `timestamps: true` |
 
 Indexes: `{ slug: 1 }` (unique), `{ status: 1, featured: -1, createdAt: -1 }`.
@@ -125,6 +128,9 @@ WhatsApp-delivered OTP is first verified (`POST /api/customer/otp/verify`).
 | --- | --- | --- |
 | `phone` | `String` | required, unique, trimmed; E.164 (e.g. `+919876543210`) |
 | `name` | `String` | optional, trimmed |
+| `email` | `String` | optional, trimmed, lowercased, email-shaped; sparse unique index (multiple customers may omit email) |
+| `profilePicUrl` | `String` | default `''`; public R2 URL set via `POST /api/customer/me/avatar` |
+| `wishlist` | `[String]` | default `[]`; product slugs the customer wishlisted (see the wishlist feature) |
 | `addresses` | `[Address]` | default `[]`; shipping addresses as subdocuments (see below) |
 | `createdAt` / `updatedAt` | `Date` | from `timestamps: true` |
 
@@ -140,11 +146,50 @@ Address subdocument (`_id` is generated per address):
 | `state` | `String` | required, trimmed |
 | `pincode` | `String` | required, trimmed |
 
-Indexes: `{ phone: 1 }` (also enforces uniqueness).
+Indexes: `{ phone: 1 }` (also enforces uniqueness), plus a sparse unique index on `email`.
 
 Persistence is an atomic upsert (`findOneAndUpdate` with `upsert: true`) keyed on `phone`,
 so concurrent first-time sign-ins for the same number cannot race into a duplicate-key error.
-Addresses are appended with `$push`; the newest address is the last element.
+Addresses are appended with `$push`; the newest address is the last element. The wishlist is
+a list of product slugs persisted by the wishlist feature (`src/backend/features/wishlist`).
+
+## Order
+
+File: `src/backend/integrations/database/models/Order.ts`
+Collection: `orders`
+Repository: `src/backend/features/orders/orders.repository.ts`
+
+A placed order. Created by `POST /api/customer/orders`; admin viewing happens via
+`GET /api/admin/orders`.
+
+| Field | Type | Constraints |
+| --- | --- | --- |
+| `number` | `String` | required, unique; human order number (e.g. `SR-YYYYMMDD-XXXX`) |
+| `customerId` | `ObjectId ref Customer` | required |
+| `customerPhone` | `String` | snapshot of the customer's phone at order time |
+| `address` | `Address` subdocument | snapshot of the delivery address |
+| `items` | `[OrderItem]` | array of line items (see below) |
+| `subtotal` | `Number` | sum of line totals, computed server-side |
+| `total` | `Number` | equals `subtotal` (no shipping/payment implemented yet) |
+| `status` | `String` | enum `placed`, default `placed` |
+| `createdAt` / `updatedAt` | `Date` | from `timestamps: true` |
+
+OrderItem subdocument:
+
+| Field | Type | Constraints |
+| --- | --- | --- |
+| `slug` | `String` | required; product slug at order time |
+| `name` | `String` | required; snapshot |
+| `price` | `Number` | required; snapshot (server-side, never client-supplied) |
+| `image` | `String` | snapshot of the first product image |
+| `quantity` | `Number` | required, integer ≥1 |
+| `lineTotal` | `Number` | `price × quantity` |
+
+Indexes: `{ number: 1 }` (unique), `{ customerId: 1 }`, `{ createdAt: -1 }`.
+
+Prices are always resolved server-side from the catalog; the client only submits slugs and
+quantities. Products with a positive `stockQuantity` are checked and atomically decremented
+when an order is placed, so stock cannot be oversold.
 
 ## OtpChallenge
 

@@ -10,7 +10,13 @@ vi.mock('@/backend/integrations/database/models/Customer', () => ({
 
 import { getMongoConnection } from '@/backend/integrations/database/connection';
 import CustomerModel from '@/backend/integrations/database/models/Customer';
-import { addCustomerAddress, getCustomerById, upsertCustomerByPhone } from './customer.repository';
+import {
+  addCustomerAddress,
+  getCustomerById,
+  setCustomerProfilePicUrl,
+  updateCustomerProfile,
+  upsertCustomerByPhone,
+} from './customer.repository';
 
 const getMongoConnectionMock = vi.mocked(getMongoConnection);
 const findOneAndUpdateMock = vi.mocked(CustomerModel.findOneAndUpdate);
@@ -126,5 +132,62 @@ describe('addCustomerAddress', () => {
         pincode: '400001',
       }),
     ).resolves.toBeNull();
+  });
+});
+
+describe('updateCustomerProfile', () => {
+  it('sets name and email when both are provided', async () => {
+    findByIdAndUpdateMock.mockResolvedValue(
+      fakeCustomerDoc({ name: 'Jane Doe', email: 'jane@example.com' }) as never,
+    );
+
+    const result = await updateCustomerProfile('c1', { name: 'Jane Doe', email: 'jane@example.com' });
+
+    expect(findByIdAndUpdateMock).toHaveBeenCalledWith(
+      'c1',
+      { $set: { name: 'Jane Doe', email: 'jane@example.com' } },
+      expect.objectContaining({ new: true }),
+    );
+    expect(result?.name).toBe('Jane Doe');
+    expect(result?.email).toBe('jane@example.com');
+  });
+
+  it('unsets the email when an empty string is requested', async () => {
+    findByIdAndUpdateMock.mockResolvedValue(fakeCustomerDoc({ email: undefined }) as never);
+
+    await updateCustomerProfile('c1', { email: '' });
+
+    expect(findByIdAndUpdateMock).toHaveBeenCalledWith(
+      'c1',
+      { $unset: { email: '' } },
+      expect.objectContaining({ new: true }),
+    );
+  });
+
+  it('returns null when the customer does not exist', async () => {
+    findByIdAndUpdateMock.mockResolvedValue(null as never);
+    await expect(updateCustomerProfile('missing', { name: 'Jane' })).resolves.toBeNull();
+  });
+});
+
+describe('setCustomerProfilePicUrl', () => {
+  it('persists the avatar URL and returns the updated record', async () => {
+    findByIdAndUpdateMock.mockResolvedValue(
+      fakeCustomerDoc({ profilePicUrl: 'https://cdn.example.com/avatars/abc.png' }) as never,
+    );
+
+    const result = await setCustomerProfilePicUrl('c1', 'https://cdn.example.com/avatars/abc.png');
+
+    expect(findByIdAndUpdateMock).toHaveBeenCalledWith(
+      'c1',
+      { $set: { profilePicUrl: 'https://cdn.example.com/avatars/abc.png' } },
+      expect.objectContaining({ new: true }),
+    );
+    expect(result?.profilePicUrl).toBe('https://cdn.example.com/avatars/abc.png');
+  });
+
+  it('returns null when the customer does not exist', async () => {
+    findByIdAndUpdateMock.mockResolvedValue(null as never);
+    await expect(setCustomerProfilePicUrl('missing', 'url')).resolves.toBeNull();
   });
 });

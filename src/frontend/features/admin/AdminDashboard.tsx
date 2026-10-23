@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { THEMES } from '@/common/themes';
 import Button from '@/frontend/components/Button';
+import Badge from '@/frontend/components/Badge';
 
 export default function AdminDashboard({ initialTheme }: { initialTheme: string }) {
   const [currentTheme, setCurrentTheme] = useState(initialTheme);
@@ -89,7 +90,7 @@ export default function AdminDashboard({ initialTheme }: { initialTheme: string 
             {/* Current Theme Badge */}
             <div className="flex items-center gap-2 p-4 bg-base-200 rounded-lg">
               <span className="text-sm font-medium">Current Theme:</span>
-              <span className="badge badge-primary badge-lg capitalize">{currentTheme}</span>
+              <Badge variant="primary" size="lg" className="capitalize">{currentTheme}</Badge>
               {saving && <span className="loading loading-spinner loading-sm ml-2"></span>}
             </div>
 
@@ -121,7 +122,7 @@ export default function AdminDashboard({ initialTheme }: { initialTheme: string 
             <div className="divider my-6">
               Theme Preview
               {previewTheme !== currentTheme && (
-                <span className="badge badge-secondary ml-2">Previewing: {previewTheme}</span>
+                <Badge variant="secondary" className="ml-2">Previewing: {previewTheme}</Badge>
               )}
             </div>
 
@@ -186,10 +187,10 @@ export default function AdminDashboard({ initialTheme }: { initialTheme: string 
                   <div>
                     <p className="text-sm text-base-content/60 mb-2">Badges</p>
                     <div className="flex flex-wrap gap-2">
-                      <span className="badge badge-info">Info</span>
-                      <span className="badge badge-success">Success</span>
-                      <span className="badge badge-warning">Warning</span>
-                      <span className="badge badge-error">Error</span>
+                      <Badge variant="info">Info</Badge>
+                      <Badge variant="success">Success</Badge>
+                      <Badge variant="warning">Warning</Badge>
+                      <Badge variant="error">Error</Badge>
                     </div>
                   </div>
                 </div>

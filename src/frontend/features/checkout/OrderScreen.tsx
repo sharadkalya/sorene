@@ -3,21 +3,69 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import Button from '@/frontend/components/Button';
-import { useAppSelector } from '@/frontend/store/hooks';
+import { useAppDispatch, useAppSelector } from '@/frontend/store/hooks';
 import { useIsClient } from '@/frontend/hooks/useIsClient';
-import { selectCartItems, selectCartSubtotal } from '@/frontend/store/slices/cart.slice';
+import { clearCart, selectCartItems, selectCartSubtotal } from '@/frontend/store/slices/cart.slice';
 import { formatPrice } from '@/frontend/features/storefront/format';
-import type { Address } from './types';
+import { placeOrder } from './api';
+import type { Address, Order } from './types';
 
-/** Order review screen. Shows the Razorpay "coming soon" modal on arrival. */
-export default function OrderScreen({ deliveryAddress }: { deliveryAddress: Address | null }) {
+interface OrderScreenProps {
+  deliveryAddress: Address | null;
+  deliveryAddressId: string | null;
+}
+
+/** Order review screen. Places the order against the selected delivery address. */
+export default function OrderScreen({ deliveryAddress, deliveryAddressId }: OrderScreenProps) {
   const items = useAppSelector(selectCartItems);
   const subtotal = useAppSelector(selectCartSubtotal);
-  const [modalOpen, setModalOpen] = useState(true);
+  const dispatch = useAppDispatch();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [order, setOrder] = useState<Order | null>(null);
   const isClient = useIsClient();
 
   if (!isClient) {
     return <div className="max-w-2xl mx-auto px-4 py-8" aria-hidden="true" />;
+  }
+
+  async function handlePlaceOrder() {
+    if (!deliveryAddressId) {
+      setError('Please choose a delivery address to continue.');
+      return;
+    }
+
+    setBusy(true);
+    setError(null);
+    try {
+      const placed = await placeOrder(
+        deliveryAddressId,
+        items.map((item) => ({ slug: item.slug, quantity: item.quantity })),
+      );
+      setOrder(placed);
+      dispatch(clearCart());
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'We could not place your order. Please try again.',
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (order) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-20 text-center">
+        <h1 className="text-3xl font-semibold mb-4">Order placed</h1>
+        <p className="text-base-content/60 mb-2">
+          Order {order.number} — {formatPrice(order.total)}
+        </p>
+        <p className="text-base-content/60 mb-6">Order placed — we&apos;ll contact you to confirm delivery</p>
+        <Button href="/shop" variant="primary">
+          Continue shopping
+        </Button>
+      </div>
+    );
   }
 
   if (items.length === 0) {
@@ -97,29 +145,14 @@ export default function OrderScreen({ deliveryAddress }: { deliveryAddress: Addr
             <span>{formatPrice(subtotal)}</span>
           </div>
           <p className="text-sm text-base-content/60">Shipping is calculated at checkout. Taxes may apply.</p>
+          {error && <div className="alert alert-error text-sm mt-4">{error}</div>}
           <div className="card-actions justify-end mt-4">
-            <Button onClick={() => setModalOpen(true)} variant="primary" disabled={!deliveryAddress}>
-              Pay with Razorpay
+            <Button onClick={handlePlaceOrder} variant="primary" disabled={!deliveryAddress || busy}>
+              {busy ? <span className="loading loading-spinner loading-sm" /> : 'Place order'}
             </Button>
           </div>
         </div>
       </div>
-
-      {modalOpen && (
-        <div className="modal modal-open">
-          <div className="modal-box">
-            <h3 className="font-semibold text-lg">Razorpay checkout is coming soon</h3>
-            <p className="py-4 text-base-content/70">
-              We&apos;re still wiring up online payments. Please try again later.
-            </p>
-            <div className="modal-action">
-              <Button onClick={() => setModalOpen(false)} variant="primary">
-                Got it
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

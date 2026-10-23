@@ -19,7 +19,13 @@ const REQUEST_TIMEOUT_MS = 10_000;
 
 export type WhatsAppOutboundMessage =
   | { type: 'text'; body: string }
-  | { type: 'template'; name: string; languageCode: string; parameters?: string[] };
+  | {
+      type: 'template';
+      name: string;
+      languageCode: string;
+      parameters?: string[];
+      copyCode?: string;
+    };
 
 export interface WhatsAppSendResult {
   messageId: string;
@@ -62,10 +68,25 @@ function buildPayload(to: string, message: WhatsAppOutboundMessage): Record<stri
     name: message.name,
     language: { code: message.languageCode },
   };
+  const components: Record<string, unknown>[] = [];
   if (message.parameters && message.parameters.length > 0) {
-    template.components = [
-      { type: 'body', parameters: message.parameters.map((text) => ({ type: 'text', text })) },
-    ];
+    components.push({
+      type: 'body',
+      parameters: message.parameters.map((text) => ({ type: 'text', text })),
+    });
+  }
+  if (message.copyCode) {
+    // Authentication templates carry a "Copy code" button whose URL also uses
+    // the OTP variable — omitting this parameter fails with error 131008.
+    components.push({
+      type: 'button',
+      sub_type: 'url',
+      index: 0,
+      parameters: [{ type: 'text', text: message.copyCode }],
+    });
+  }
+  if (components.length > 0) {
+    template.components = components;
   }
   return { ...base, type: 'template', template };
 }

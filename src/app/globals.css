@@ -53,16 +53,12 @@ input[type='search']::-webkit-search-decoration {
   appearance: none;
 }
 
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-/* daisyUI 5 emits its component styles inside cascade layers, but under
-   Tailwind v3 + this build those layers lose to the un-layered preflight above
-   (border: 0, color: inherit, padding: 0). Re-assert the essentials un-layered
-   so form controls and buttons render consistently. */
+/* daisyUI 5 emits its component styles inside cascade layers. Any un-layered
+   universal reset here would override those layered component styles and strip
+   padding/borders from cards, badges, toggles, alerts, menus, etc. Tailwind's
+   own preflight (in the base layer) already resets box-sizing and block-level
+   margins, so no extra reset is needed. We only re-assert a consistent look
+   for form controls un-layered, since those are the elements we standardize. */
 .input,
 .select,
 .textarea {
@@ -77,6 +73,26 @@ input[type='search']::-webkit-search-decoration {
 .textarea:focus,
 .textarea:focus-within {
   --input-color: var(--color-base-content);
+}
+
+/* Tailwind's preflight resets `padding` on `input` and `border-width` on
+   everything, which beats daisyUI's layered `.checkbox`/`.radio`/`.toggle`
+   rules and leaves them borderless. Re-assert the component defaults
+   un-layered (matching daisyUI's own base rules) so these controls render. */
+.checkbox,
+.radio {
+  border: var(--border) solid
+    var(--input-color, color-mix(in oklab, var(--color-base-content) 20%, transparent));
+}
+
+.radio {
+  padding: 0.25rem;
+}
+
+.toggle {
+  color: var(--input-color, color-mix(in oklab, var(--color-base-content) 50%, transparent));
+  border: var(--border) solid currentColor;
+  padding: var(--toggle-p, 0.1875rem);
 }
 
 .btn {
@@ -100,28 +116,4 @@ body {
   font-family: var(--font-jost), sans-serif;
   font-weight: 300;
   overflow-x: hidden;
-}
-
-/* Scroll reveal */
-.reveal {
-  opacity: 0;
-  transform: translateY(40px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
-}
-
-.reveal.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.reveal-delay-1 {
-  transition-delay: 0.1s;
-}
-
-.reveal-delay-2 {
-  transition-delay: 0.2s;
-}
-
-.reveal-delay-3 {
-  transition-delay: 0.3s;
 }

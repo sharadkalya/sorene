@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createCategory, createProduct } from './catalog.service';
+import { createCategory, createProduct, getAdminProducts, updateProduct } from './catalog.service';
 import * as repo from './catalog.repository';
 
 vi.mock('./catalog.repository', () => ({
@@ -23,6 +23,9 @@ vi.mock('./catalog.repository', () => ({
   listCategories: vi.fn(),
   listCollections: vi.fn(),
   listProducts: vi.fn(),
+  listAdminProducts: vi.fn(),
+  getActiveProductsBySlugs: vi.fn(),
+  decrementProductStock: vi.fn(),
   getProductBySlug: vi.fn(),
   findCategoriesBySlugs: vi.fn(),
   findCollectionsBySlugs: vi.fn(),
@@ -55,6 +58,9 @@ const productRecord = {
   collections: [],
   status: 'draft' as const,
   featured: false,
+  materialInfo: '',
+  manufacturingInfo: '',
+  stockQuantity: 0,
   createdAt: '',
   updatedAt: '',
 };
@@ -120,5 +126,56 @@ describe('createProduct', () => {
     expect(repo.createProduct).toHaveBeenCalledWith(
       expect.objectContaining({ slug: 'the-arch-bag', status: 'active' }),
     );
+  });
+
+  it('persists material, manufacturing, and stock fields', async () => {
+    vi.mocked(repo.findExistingCategoryIds).mockResolvedValue([]);
+    vi.mocked(repo.findExistingCollectionIds).mockResolvedValue([]);
+    vi.mocked(repo.productSlugExists).mockResolvedValue(false);
+    vi.mocked(repo.createProduct).mockResolvedValue({ ...productRecord, stockQuantity: 5 });
+
+    await createProduct({
+      name: 'The Arch Bag',
+      description: 'A structured handbag.',
+      price: 240,
+      categories: [],
+      collections: [],
+      materialInfo: 'Full-grain leather',
+      manufacturingInfo: 'Handcrafted in Kolkata',
+      stockQuantity: 5,
+    });
+
+    expect(repo.createProduct).toHaveBeenCalledWith(
+      expect.objectContaining({
+        materialInfo: 'Full-grain leather',
+        manufacturingInfo: 'Handcrafted in Kolkata',
+        stockQuantity: 5,
+      }),
+    );
+  });
+});
+
+describe('updateProduct', () => {
+  it('persists the internal stock and detail fields when provided', async () => {
+    vi.mocked(repo.getProductById).mockResolvedValue(productRecord);
+    vi.mocked(repo.updateProduct).mockResolvedValue({ ...productRecord, stockQuantity: 3 });
+
+    await updateProduct('p1', { stockQuantity: 3, materialInfo: 'Canvas' });
+
+    expect(repo.updateProduct).toHaveBeenCalledWith(
+      'p1',
+      expect.objectContaining({ stockQuantity: 3, materialInfo: 'Canvas' }),
+    );
+  });
+});
+
+describe('getAdminProducts', () => {
+  it('returns the admin list including stock quantities', async () => {
+    vi.mocked(repo.listAdminProducts).mockResolvedValue([{ ...productRecord, stockQuantity: 7 }]);
+
+    const products = await getAdminProducts();
+
+    expect(repo.listAdminProducts).toHaveBeenCalled();
+    expect(products[0].stockQuantity).toBe(7);
   });
 });

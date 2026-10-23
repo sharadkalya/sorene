@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Button from '@/frontend/components/Button';
+import Badge from '@/frontend/components/Badge';
 import Select from '@/frontend/components/Select';
 import TextInput from '@/frontend/components/TextInput';
 import ProductCard, { type StorefrontProduct } from './ProductCard';
@@ -135,10 +136,14 @@ export default function ProductListing(props: ProductListingProps) {
       {(lockedCategorySlug || lockedCollectionSlug) && (
         <div className="flex flex-wrap gap-2 mb-4">
           {lockedCollectionSlug && (
-            <LinkChip label={lockedCollectionSlug} href="/shop" />
+            <Badge as="a" href="/shop" variant="outline" className="gap-1">
+              {lockedCollectionSlug} ✕
+            </Badge>
           )}
           {lockedCategorySlug && (
-            <LinkChip label={lockedCategorySlug} href="/shop" />
+            <Badge as="a" href="/shop" variant="outline" className="gap-1">
+              {lockedCategorySlug} ✕
+            </Badge>
           )}
         </div>
       )}
@@ -257,40 +262,29 @@ export default function ProductListing(props: ProductListingProps) {
               {selectedCategorySlugs.map((slug) => {
                 const category = catalog.categories.find((entry) => entry.slug === slug);
                 return (
-                  <button
-                    key={`category-${slug}`}
-                    onClick={() => toggleCategory(slug)}
-                    className="badge badge-outline gap-1 py-3"
-                  >
+                  <Badge key={`category-${slug}`} as="button" onClick={() => toggleCategory(slug)} variant="outline" className="gap-1">
                     {category?.name ?? slug} ✕
-                  </button>
+                  </Badge>
                 );
               })}
               {selectedCollectionSlugs.map((slug) => {
                 const collection = catalog.collections.find((entry) => entry.slug === slug);
                 return (
-                  <button
-                    key={`collection-${slug}`}
-                    onClick={() => toggleCollection(slug)}
-                    className="badge badge-outline gap-1 py-3"
-                  >
+                  <Badge key={`collection-${slug}`} as="button" onClick={() => toggleCollection(slug)} variant="outline" className="gap-1">
                     {collection?.name ?? slug} ✕
-                  </button>
+                  </Badge>
                 );
               })}
               {q && (
-                <button onClick={() => push({ q: '' })} className="badge badge-outline gap-1 py-3">
+                <Badge as="button" onClick={() => push({ q: '' })} variant="outline" className="gap-1">
                   “{q}” ✕
-                </button>
+                </Badge>
               )}
               {(minPrice !== undefined || maxPrice !== undefined) && (
-                <button
-                  onClick={() => push({ minPrice: '', maxPrice: '' })}
-                  className="badge badge-outline gap-1 py-3"
-                >
+                <Badge as="button" onClick={() => push({ minPrice: '', maxPrice: '' })} variant="outline" className="gap-1">
                   {minPrice !== undefined ? formatPrice(minPrice) : 'Any'} –{' '}
                   {maxPrice !== undefined ? formatPrice(maxPrice) : 'Any'} ✕
-                </button>
+                </Badge>
               )}
             </div>
           )}
@@ -326,13 +320,5 @@ export default function ProductListing(props: ProductListingProps) {
         </div>
       </div>
     </div>
-  );
-}
-
-function LinkChip({ label, href }: { label: string; href: string }) {
-  return (
-    <a href={href} className="badge badge-outline gap-1 py-3">
-      {label} ✕
-    </a>
   );
 }

@@ -90,6 +90,24 @@ describe('sendWhatsAppMessage', () => {
     ]);
   });
 
+  it('includes the copy-code button parameter for authentication templates', async () => {
+    fetchMock.mockResolvedValue(graphResponse(200, { messages: [{ id: 'wamid.OTP' }] }));
+
+    await sendWhatsAppMessage('919876543210', {
+      type: 'template',
+      name: 'sorveneotp',
+      languageCode: 'en',
+      parameters: ['123456'],
+      copyCode: '123456',
+    });
+
+    const payload = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(payload.template.components).toEqual([
+      { type: 'body', parameters: [{ type: 'text', text: '123456' }] },
+      { type: 'button', sub_type: 'url', index: 0, parameters: [{ type: 'text', text: '123456' }] },
+    ]);
+  });
+
   it('uses the version from WHATSAPP_API_VERSION', async () => {
     process.env.WHATSAPP_API_VERSION = 'v25.0';
     fetchMock.mockResolvedValue(graphResponse(200, { messages: [{ id: 'wamid.V' }] }));

@@ -4,13 +4,22 @@ import Link from 'next/link';
 import { useAppSelector } from '@/frontend/store/hooks';
 import { useIsClient } from '@/frontend/hooks/useIsClient';
 import { selectCartCount } from '@/frontend/store/slices/cart.slice';
+import { selectWishlistCount } from '@/frontend/store/slices/wishlist.slice';
 import CatalogSearch from './CatalogSearch';
 import Button from '@/frontend/components/Button';
+import Badge from '@/frontend/components/Badge';
 
-/** Storefront navigation: brand, shop links, and a cart link. */
-export default function StoreHeader() {
+interface StoreHeaderProps {
+  isAuthenticated: boolean;
+  wishlistCount: number;
+}
+
+/** Storefront navigation: brand, shop links, account, wishlist, and cart. */
+export default function StoreHeader({ isAuthenticated, wishlistCount }: StoreHeaderProps) {
   const count = useAppSelector(selectCartCount);
+  const guestWishlistCount = useAppSelector(selectWishlistCount);
   const isClient = useIsClient();
+  const wishlistBadgeCount = isAuthenticated ? wishlistCount : (isClient ? guestWishlistCount : 0);
 
   return (
     <>
@@ -62,6 +71,42 @@ export default function StoreHeader() {
             </div>
 
             <Button
+              href="/wishlist"
+              variant="ghost"
+              shape="square"
+              className="relative"
+              aria-label="View wishlist"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                />
+              </svg>
+              {isClient && wishlistBadgeCount > 0 && (
+                <Badge variant="primary" size="sm" className="absolute -top-1 -right-1">{wishlistBadgeCount}</Badge>
+              )}
+            </Button>
+
+            <Button
+              href="/account"
+              variant="ghost"
+              shape="square"
+              aria-label="Account"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
+              </svg>
+            </Button>
+
+            <Button
               href="/cart"
               variant="ghost"
               shape="square"
@@ -77,7 +122,7 @@ export default function StoreHeader() {
                 />
               </svg>
               {isClient && count > 0 && (
-                <span className="badge badge-primary badge-sm absolute -top-1 -right-1">{count}</span>
+                <Badge variant="primary" size="sm" className="absolute -top-1 -right-1">{count}</Badge>
               )}
             </Button>
           </div>

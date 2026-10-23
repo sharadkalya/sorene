@@ -7,6 +7,7 @@ import Button from '@/frontend/components/Button';
 const NAV_ITEMS = [
   { href: '/admin', label: 'Dashboard' },
   { href: '/admin/catalog/products', label: 'Products' },
+  { href: '/admin/orders', label: 'Orders' },
   { href: '/admin/catalog/categories', label: 'Categories' },
   { href: '/admin/catalog/collections', label: 'Collections' },
   { href: '/admin/subscribers', label: 'Subscribers' },

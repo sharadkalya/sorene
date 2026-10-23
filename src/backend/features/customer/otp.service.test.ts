@@ -82,6 +82,7 @@ describe('requestOtp', () => {
       name: 'sorveneotp',
       languageCode: 'en',
       parameters: ['123456'],
+      copyCode: '123456',
     });
     expect(upsertOtpChallengeMock).toHaveBeenCalledWith({
       phone: PHONE,
@@ -165,6 +166,8 @@ describe('verifyOtp', () => {
     upsertCustomerByPhoneMock.mockResolvedValue({
       id: 'c1',
       phone: PHONE,
+      email: undefined,
+      profilePicUrl: '',
       addresses: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

@@ -69,6 +69,7 @@ export async function requestOtp(input: unknown): Promise<RequestOtpResult> {
       name: OTP_TEMPLATE_NAME,
       languageCode: OTP_TEMPLATE_LANGUAGE,
       parameters: [code],
+      copyCode: code,
     });
   } catch (error) {
     // Sending failed, so the stored code is useless — clear it and let a retry

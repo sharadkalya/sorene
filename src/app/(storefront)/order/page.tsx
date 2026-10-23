@@ -23,5 +23,5 @@ export default async function OrderPage({
     deliveryAddress = null;
   }
 
-  return <OrderScreen deliveryAddress={deliveryAddress} />;
+  return <OrderScreen deliveryAddress={deliveryAddress} deliveryAddressId={addressId ?? null} />;
 }

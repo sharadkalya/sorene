@@ -13,6 +13,9 @@ export interface IProduct {
   collections: Types.ObjectId[];
   status: ProductStatus;
   featured: boolean;
+  materialInfo?: string;
+  manufacturingInfo?: string;
+  stockQuantity?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -66,6 +69,27 @@ const ProductSchema = new mongoose.Schema<IProduct>(
     featured: {
       type: Boolean,
       default: false,
+    },
+    materialInfo: {
+      type: String,
+      trim: true,
+      default: '',
+      maxlength: [500, 'Material info cannot exceed 500 characters'],
+    },
+    manufacturingInfo: {
+      type: String,
+      trim: true,
+      default: '',
+      maxlength: [500, 'Manufacturing info cannot exceed 500 characters'],
+    },
+    stockQuantity: {
+      type: Number,
+      default: 0,
+      min: [0, 'Stock quantity cannot be negative'],
+      validate: {
+        validator: Number.isInteger,
+        message: 'Stock quantity must be a whole number',
+      },
     },
   },
   {

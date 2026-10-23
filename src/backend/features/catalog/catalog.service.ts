@@ -13,6 +13,7 @@ import {
   type ProductUpdateInput,
 } from './catalog.validation';
 import type {
+  AdminProductRecord,
   CategoryRecord,
   CollectionRecord,
   ProductRecord,
@@ -163,8 +164,8 @@ export async function deleteCollection(id: string): Promise<void> {
 
 // ─── Admin: products ───────────────────────────────────────────────────────
 
-export async function getAdminProducts(): Promise<ProductRecord[]> {
-  return repo.listProducts({});
+export async function getAdminProducts(): Promise<AdminProductRecord[]> {
+  return repo.listAdminProducts();
 }
 
 export async function getAdminProduct(id: string): Promise<ProductRecord> {
@@ -187,7 +188,7 @@ async function assertValidReferences(categoryIds: string[], collectionIds: strin
   }
 }
 
-export async function createProduct(input: unknown): Promise<ProductRecord> {
+export async function createProduct(input: unknown): Promise<AdminProductRecord> {
   const parsed = productCreateSchema.safeParse(input);
   if (!parsed.success) throw new AppError('VALIDATION_ERROR', formatIssues(parsed.error));
 
@@ -206,10 +207,13 @@ export async function createProduct(input: unknown): Promise<ProductRecord> {
     collections: data.collections,
     status: data.status,
     featured: data.featured,
+    materialInfo: data.materialInfo ?? '',
+    manufacturingInfo: data.manufacturingInfo ?? '',
+    stockQuantity: data.stockQuantity ?? 0,
   });
 }
 
-export async function updateProduct(id: string, input: unknown): Promise<ProductRecord> {
+export async function updateProduct(id: string, input: unknown): Promise<AdminProductRecord> {
   const parsed = productUpdateSchema.safeParse(input);
   if (!parsed.success) throw new AppError('VALIDATION_ERROR', formatIssues(parsed.error));
 
@@ -236,6 +240,9 @@ export async function updateProduct(id: string, input: unknown): Promise<Product
   if (data.collections !== undefined) patch.collections = data.collections;
   if (data.status !== undefined) patch.status = data.status;
   if (data.featured !== undefined) patch.featured = data.featured;
+  if (data.materialInfo !== undefined) patch.materialInfo = data.materialInfo;
+  if (data.manufacturingInfo !== undefined) patch.manufacturingInfo = data.manufacturingInfo;
+  if (data.stockQuantity !== undefined) patch.stockQuantity = data.stockQuantity;
 
   const updated = await repo.updateProduct(id, patch);
   if (!updated) throw new AppError('NOT_FOUND', 'Product not found.');

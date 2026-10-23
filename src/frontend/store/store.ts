@@ -1,5 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import cartReducer from './slices/cart.slice';
+import wishlistReducer from './slices/wishlist.slice';
 
 /**
  * Redux Toolkit store factory.
@@ -12,6 +13,7 @@ export function makeStore() {
   return configureStore({
     reducer: {
       cart: cartReducer,
+      wishlist: wishlistReducer,
     },
   });
 }

@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import Button from '@/frontend/components/Button';
+import Badge from '@/frontend/components/Badge';
+import Switch from '@/frontend/components/Switch';
 import TextInput from '@/frontend/components/TextInput';
 import ImageUploader from './ImageUploader';
 
@@ -187,9 +189,9 @@ export default function TaxonomyManager({ kind, initialItems }: TaxonomyManagerP
                     <td className="text-base-content/60 text-sm">{item.slug}</td>
                     <td className="text-base-content/70 text-sm max-w-xs truncate">{item.description}</td>
                     <td>
-                      <span className={`badge ${item.isActive ? 'badge-success' : 'badge-ghost'}`}>
+                      <Badge variant={item.isActive ? 'success' : 'ghost'}>
                         {item.isActive ? 'Active' : 'Hidden'}
-                      </span>
+                      </Badge>
                     </td>
                     <td>
                       <div className="flex gap-1 justify-end">
@@ -248,15 +250,12 @@ export default function TaxonomyManager({ kind, initialItems }: TaxonomyManagerP
                 />
               </div>
 
-              <label className="label cursor-pointer justify-start gap-3">
-                <input
-                  type="checkbox"
-                  className="toggle toggle-primary"
-                  checked={form.isActive}
-                  onChange={(event) => setForm((prev) => ({ ...prev, isActive: event.target.checked }))}
-                />
-                <span>Visible on the storefront</span>
-              </label>
+              <Switch
+                label="Visible on the storefront"
+                description={`Hidden ${label.toLowerCase()}s won't appear in the shop.`}
+                checked={form.isActive}
+                onChange={(checked) => setForm((prev) => ({ ...prev, isActive: checked }))}
+              />
             </div>
 
             <div className="modal-action gap-2">

@@ -45,6 +45,21 @@ export const productCreateSchema = z.object({
   collections: z.array(z.string().min(1)).max(30, 'Too many collections').default([]),
   status: z.enum(['draft', 'active']).default('draft'),
   featured: z.boolean().default(false),
+  materialInfo: z
+    .string()
+    .trim()
+    .max(500, 'Material info cannot exceed 500 characters')
+    .optional(),
+  manufacturingInfo: z
+    .string()
+    .trim()
+    .max(500, 'Manufacturing info cannot exceed 500 characters')
+    .optional(),
+  stockQuantity: z.coerce
+    .number()
+    .int('Stock quantity must be a whole number')
+    .min(0, 'Stock quantity cannot be negative')
+    .default(0),
 });
 
 export const productUpdateSchema = productCreateSchema.partial();

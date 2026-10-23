@@ -3,7 +3,7 @@ import CustomerModel, {
   type ICustomer,
   type ICustomerAddress,
 } from '@/backend/integrations/database/models/Customer';
-import type { AddressRecord, CustomerRecord, NewAddress } from './customer.types';
+import type { AddressRecord, CustomerRecord, NewAddress, ProfileUpdateInput } from './customer.types';
 
 /**
  * Persistence for customers. All database access for this feature lives here;
@@ -35,6 +35,8 @@ function toCustomerRecord(doc: CustomerDoc): CustomerRecord {
     id: doc._id.toString(),
     phone: doc.phone,
     name: doc.name,
+    email: doc.email,
+    profilePicUrl: doc.profilePicUrl ?? '',
     addresses: doc.addresses.map(toAddressRecord),
     createdAt: doc.createdAt?.toISOString() ?? '',
     updatedAt: doc.updatedAt?.toISOString() ?? '',
@@ -78,4 +80,53 @@ export async function addCustomerAddress(
 
   const customer = toCustomerRecord(doc as CustomerDoc);
   return { customer, address: customer.addresses[customer.addresses.length - 1] };
+}
+
+/**
+ * Apply a profile patch. A provided `name`/`email` is set; an empty `email`
+ * string unsets the field (so the sparse unique index keeps ignoring it).
+ * Returns the updated record, or null when the customer is missing.
+ */
+export async function updateCustomerProfile(
+  customerId: string,
+  patch: ProfileUpdateInput,
+): Promise<CustomerRecord | null> {
+  await getMongoConnection();
+
+  const $set: Record<string, unknown> = {};
+  const $unset: Record<string, string> = {};
+
+  if (patch.name !== undefined) {
+    $set.name = patch.name;
+  }
+  if (patch.email !== undefined) {
+    if (patch.email === '') {
+      $unset.email = '';
+    } else {
+      $set.email = patch.email;
+    }
+  }
+
+  const update = { ...(Object.keys($set).length > 0 ? { $set } : {}), ...(Object.keys($unset).length > 0 ? { $unset } : {}) };
+
+  const doc = await CustomerModel.findByIdAndUpdate(customerId, update, {
+    new: true,
+    runValidators: true,
+  });
+  return doc ? toCustomerRecord(doc as CustomerDoc) : null;
+}
+
+/** Persist a public avatar URL for the customer. */
+export async function setCustomerProfilePicUrl(
+  customerId: string,
+  url: string,
+): Promise<CustomerRecord | null> {
+  await getMongoConnection();
+
+  const doc = await CustomerModel.findByIdAndUpdate(
+    customerId,
+    { $set: { profilePicUrl: url } },
+    { new: true, runValidators: true },
+  );
+  return doc ? toCustomerRecord(doc as CustomerDoc) : null;
 }

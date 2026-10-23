@@ -35,7 +35,13 @@ export default async function RootLayout({
   const theme = await getTheme();
   
   return (
-    <html lang="en" className={`${cormorant.variable} ${jost.variable}`} data-theme={theme} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${cormorant.variable} ${jost.variable}`}
+      data-theme={theme}
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
       <body>
         <StoreProvider>
           <ThemeProvider initialTheme={theme}>{children}</ThemeProvider>

@@ -147,7 +147,7 @@ export default function StayTunedForm({ onSuccess }: StayTunedFormProps) {
 
       {error && (
         <div className={styles.stError}>
-          <span className="text-red-600">⚠ {error}</span>
+          <span className="text-error">⚠ {error}</span>
         </div>
       )}
 

@@ -1,4 +1,4 @@
-import type { Address, AddressInput, Customer } from './types';
+import type { Address, AddressInput, Customer, Order } from './types';
 
 interface ApiEnvelope {
   success?: boolean;
@@ -52,4 +52,37 @@ export async function addCustomerAddress(input: AddressInput): Promise<Address> 
     throw new Error(data.error?.message || 'We could not save your address. Please try again.');
   }
   return data.address;
+}
+
+/** Place an order against the selected delivery address and cart items. */
+export async function placeOrder(
+  addressId: string,
+  items: { slug: string; quantity: number }[],
+): Promise<Order> {
+  const response = await fetch('/api/customer/orders', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ addressId, items }),
+  });
+  const data = await readJson<{ order: Order }>(response);
+  if (!response.ok || data.success === false || !data.order) {
+    throw new Error(data.error?.message || 'We could not place your order. Please try again.');
+  }
+  return data.order;
+}
+
+/** Look up an Indian pincode to auto-fill city and state. */
+export async function lookupPincode(pincode: string): Promise<{
+  city: string;
+  district: string;
+  state: string;
+}> {
+  const response = await fetch(`/api/pincode?pincode=${encodeURIComponent(pincode)}`, {
+    headers: { 'Content-Type': 'application/json' },
+  });
+  const data = await readJson<{ data: { city: string; district: string; state: string } }>(response);
+  if (!response.ok || data.success === false || !data.data) {
+    throw new Error(data.error?.message || "We couldn't find that pincode. Please check and try again.");
+  }
+  return data.data;
 }

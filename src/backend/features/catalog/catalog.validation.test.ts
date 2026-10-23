@@ -55,4 +55,73 @@ describe('catalog validation', () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it('defaults stockQuantity to 0 and accepts the optional detail fields', () => {
+    const result = productCreateSchema.safeParse({
+      name: 'Bag',
+      description: 'Desc',
+      price: 100,
+      materialInfo: 'Full-grain leather',
+      manufacturingInfo: 'Handcrafted in Kolkata',
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.stockQuantity).toBe(0);
+      expect(result.data.materialInfo).toBe('Full-grain leather');
+      expect(result.data.manufacturingInfo).toBe('Handcrafted in Kolkata');
+    }
+  });
+
+  it('coerces a numeric string stockQuantity to a number', () => {
+    const result = productCreateSchema.safeParse({
+      name: 'Bag',
+      description: 'Desc',
+      price: 100,
+      stockQuantity: '7',
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.stockQuantity).toBe(7);
+    }
+  });
+
+  it('rejects a negative stockQuantity', () => {
+    const result = productCreateSchema.safeParse({
+      name: 'Bag',
+      description: 'Desc',
+      price: 100,
+      stockQuantity: -1,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects a non-integer stockQuantity', () => {
+    const result = productCreateSchema.safeParse({
+      name: 'Bag',
+      description: 'Desc',
+      price: 100,
+      stockQuantity: 2.5,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects material info over 500 characters', () => {
+    const result = productCreateSchema.safeParse({
+      name: 'Bag',
+      description: 'Desc',
+      price: 100,
+      materialInfo: 'x'.repeat(501),
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects manufacturing info over 500 characters', () => {
+    const result = productCreateSchema.safeParse({
+      name: 'Bag',
+      description: 'Desc',
+      price: 100,
+      manufacturingInfo: 'x'.repeat(501),
+    });
+    expect(result.success).toBe(false);
+  });
 });

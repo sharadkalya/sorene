@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import Button from '@/frontend/components/Button';
+import Badge from '@/frontend/components/Badge';
 import Select from '@/frontend/components/Select';
+import Switch from '@/frontend/components/Switch';
 import TextInput from '@/frontend/components/TextInput';
 import ImageUploader from './ImageUploader';
 
@@ -24,6 +26,9 @@ interface ProductRecord {
   collections: CategoryRef[];
   status: 'draft' | 'active';
   featured: boolean;
+  materialInfo: string;
+  manufacturingInfo: string;
+  stockQuantity: number;
 }
 
 interface ProductsManagerProps {
@@ -42,6 +47,9 @@ interface ProductForm {
   collectionIds: string[];
   status: 'draft' | 'active';
   featured: boolean;
+  materialInfo: string;
+  manufacturingInfo: string;
+  stockQuantity: string;
 }
 
 const EMPTY_FORM: ProductForm = {
@@ -54,10 +62,13 @@ const EMPTY_FORM: ProductForm = {
   collectionIds: [],
   status: 'draft',
   featured: false,
+  materialInfo: '',
+  manufacturingInfo: '',
+  stockQuantity: '',
 };
 
 function formatPrice(value: number): string {
-  return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+  return value.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2 });
 }
 
 /**
@@ -95,6 +106,9 @@ export default function ProductsManager({
       collectionIds: product.collections.map((collection) => collection.id),
       status: product.status,
       featured: product.featured,
+      materialInfo: product.materialInfo ?? '',
+      manufacturingInfo: product.manufacturingInfo ?? '',
+      stockQuantity: product.stockQuantity != null ? String(product.stockQuantity) : '',
     });
     setEditing(product);
     setError('');
@@ -116,6 +130,12 @@ export default function ProductsManager({
       return;
     }
 
+    const stockQuantity = form.stockQuantity.trim() ? Number(form.stockQuantity) : 0;
+    if (!Number.isInteger(stockQuantity) || stockQuantity < 0) {
+      setError('Stock quantity must be a whole number of 0 or more.');
+      return;
+    }
+
     setSaving(true);
     setError('');
 
@@ -129,6 +149,9 @@ export default function ProductsManager({
       collections: form.collectionIds,
       status: form.status,
       featured: form.featured,
+      materialInfo: form.materialInfo.trim(),
+      manufacturingInfo: form.manufacturingInfo.trim(),
+      stockQuantity,
     };
 
     try {
@@ -207,6 +230,7 @@ export default function ProductsManager({
                 <tr>
                   <th>Product</th>
                   <th>Price</th>
+                  <th>Stock</th>
                   <th>Status</th>
                   <th>Categories</th>
                   <th>Collections</th>
@@ -231,15 +255,18 @@ export default function ProductsManager({
                         )}
                         <div>
                           <div className="font-semibold">{product.name}</div>
-                          {product.featured && <span className="badge badge-secondary badge-sm">Featured</span>}
+                          {product.featured && <Badge variant="secondary" size="sm">Featured</Badge>}
                         </div>
                       </div>
                     </td>
                     <td>{formatPrice(product.price)}</td>
                     <td>
-                      <span className={`badge ${product.status === 'active' ? 'badge-success' : 'badge-ghost'}`}>
+                      <Badge variant="outline">{product.stockQuantity ?? 0}</Badge>
+                    </td>
+                    <td>
+                      <Badge variant={product.status === 'active' ? 'success' : 'ghost'}>
                         {product.status === 'active' ? 'Active' : 'Draft'}
-                      </span>
+                      </Badge>
                     </td>
                     <td className="text-sm text-base-content/70">
                       {product.categories.length
@@ -302,7 +329,7 @@ export default function ProductsManager({
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <span className="text-sm font-medium">Price (USD)</span>
+                  <span className="text-sm font-medium">Price (INR)</span>
                   <TextInput
                     type="number"
                     min="0"
@@ -324,6 +351,18 @@ export default function ProductsManager({
                     placeholder="Original price"
                   />
                 </div>
+
+                <div className="flex flex-col gap-2">
+                  <span className="text-sm font-medium">Stock quantity (internal)</span>
+                  <TextInput
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={form.stockQuantity}
+                    onChange={(event) => setForm((prev) => ({ ...prev, stockQuantity: event.target.value }))}
+                    placeholder="0"
+                  />
+                </div>
               </div>
 
               <div className="flex flex-col gap-2">
@@ -335,6 +374,30 @@ export default function ProductsManager({
                   placeholder="Product details, materials, and story"
                   rows={4}
                 />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-2">
+                  <span className="text-sm font-medium">Material info (optional)</span>
+                  <textarea
+                    className="textarea w-full"
+                    value={form.materialInfo}
+                    onChange={(event) => setForm((prev) => ({ ...prev, materialInfo: event.target.value }))}
+                    placeholder="Fabrics, trims, hardware"
+                    rows={3}
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <span className="text-sm font-medium">Manufacturing info (optional)</span>
+                  <textarea
+                    className="textarea w-full"
+                    value={form.manufacturingInfo}
+                    onChange={(event) => setForm((prev) => ({ ...prev, manufacturingInfo: event.target.value }))}
+                    placeholder="Where and how it is made"
+                    rows={3}
+                  />
+                </div>
               </div>
 
               <div className="flex flex-col gap-2">
@@ -392,15 +455,12 @@ export default function ProductsManager({
                 </div>
               </div>
 
-              <label className="label cursor-pointer justify-start gap-3">
-                <input
-                  type="checkbox"
-                  className="toggle toggle-primary"
-                  checked={form.featured}
-                  onChange={(event) => setForm((prev) => ({ ...prev, featured: event.target.checked }))}
-                />
-                <span>Featured product</span>
-              </label>
+              <Switch
+                label="Featured product"
+                description="Show this product in the featured-first sort."
+                checked={form.featured}
+                onChange={(checked) => setForm((prev) => ({ ...prev, featured: checked }))}
+              />
             </div>
 
             <div className="modal-action gap-2">

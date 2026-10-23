@@ -1,8 +1,9 @@
 'use client';
 
-import type { FormEvent, InputHTMLAttributes } from 'react';
+import { useRef, useState, type FormEvent, type InputHTMLAttributes, type Ref } from 'react';
 import Button from '@/frontend/components/Button';
 import TextInput from '@/frontend/components/TextInput';
+import { lookupPincode } from './api';
 import type { Address, Customer } from './types';
 
 interface AddressStepProps {
@@ -28,13 +29,14 @@ interface FieldProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size' | 'name'> {
   label: string;
   name: string;
+  inputRef?: Ref<HTMLInputElement>;
 }
 
-function Field({ label, name, ...props }: FieldProps) {
+function Field({ label, name, inputRef, ...props }: FieldProps) {
   return (
     <div className="flex flex-col gap-2">
       <span className="text-sm font-medium">{label}</span>
-      <TextInput name={name} {...props} />
+      <TextInput name={name} ref={inputRef} {...props} />
     </div>
   );
 }
@@ -52,6 +54,35 @@ export default function AddressStep({
   onBackToSelection,
   onSubmitForm,
 }: AddressStepProps) {
+  const cityRef = useRef<HTMLInputElement>(null);
+  const stateRef = useRef<HTMLInputElement>(null);
+  const pincodeRef = useRef<HTMLInputElement>(null);
+  const [lookup, setLookup] = useState<{
+    status: 'idle' | 'loading' | 'success' | 'error';
+    message: string;
+  }>({ status: 'idle', message: '' });
+
+  async function handleLookup(rawPincode: string) {
+    const pincode = rawPincode.trim();
+    if (!/^[1-9]\d{5}$/.test(pincode)) {
+      setLookup({ status: 'error', message: 'Enter a valid 6-digit pincode.' });
+      return;
+    }
+
+    setLookup({ status: 'loading', message: '' });
+    try {
+      const result = await lookupPincode(pincode);
+      if (cityRef.current) cityRef.current.value = result.city;
+      if (stateRef.current) stateRef.current.value = result.state;
+      setLookup({ status: 'success', message: `Found ${result.city}, ${result.state}.` });
+    } catch (error) {
+      setLookup({
+        status: 'error',
+        message: error instanceof Error ? error.message : "We couldn't find that pincode.",
+      });
+    }
+  }
+
   if (mode === 'form') {
     return (
       <section className="card bg-base-100 border border-base-300">
@@ -76,10 +107,43 @@ export default function AddressStep({
             <Field label="Address line 1" name="line1" placeholder="House no, street, area" />
             <Field label="Address line 2 (optional)" name="line2" placeholder="Landmark, apartment" />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="City" name="city" placeholder="Mumbai" />
-              <Field label="State" name="state" placeholder="Maharashtra" />
+              <Field label="City" name="city" placeholder="Mumbai" inputRef={cityRef} />
+              <Field label="State" name="state" placeholder="Maharashtra" inputRef={stateRef} />
             </div>
-            <Field label="Postal code" name="pincode" placeholder="400001" inputMode="numeric" />
+            <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+              <div className="flex-1">
+                <Field
+                  label="Postal code"
+                  name="pincode"
+                  placeholder="400001"
+                  inputMode="numeric"
+                  inputRef={pincodeRef}
+                  onBlur={(event) => {
+                    const value = event.currentTarget.value.trim();
+                    if (value) handleLookup(value);
+                  }}
+                />
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleLookup(pincodeRef.current?.value ?? '')}
+                disabled={busy || lookup.status === 'loading'}
+              >
+                {lookup.status === 'loading' ? (
+                  <span className="loading loading-spinner loading-sm" />
+                ) : (
+                  'Auto-fill'
+                )}
+              </Button>
+            </div>
+
+            {lookup.status === 'success' && (
+              <div className="alert alert-success text-sm">{lookup.message}</div>
+            )}
+            {lookup.status === 'error' && (
+              <div className="alert alert-error text-sm">{lookup.message}</div>
+            )}
 
             <div className="flex flex-wrap gap-2">
               <Button type="submit" variant="primary" disabled={busy}>

@@ -1,4 +1,4 @@
-/** Format a number as USD currency for storefront display. */
+/** Format a number as INR currency for storefront display. */
 export function formatPrice(value: number): string {
-  return value.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
+  return value.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2 });
 }

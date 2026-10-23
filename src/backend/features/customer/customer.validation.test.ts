@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addressInputSchema } from './customer.validation';
+import { addressInputSchema, profileUpdateSchema } from './customer.validation';
 
 const VALID_ADDRESS = {
   fullName: 'Jane Doe',
@@ -39,5 +39,43 @@ describe('addressInputSchema', () => {
 
   it('rejects an empty phone number', () => {
     expect(addressInputSchema.safeParse({ ...VALID_ADDRESS, phone: '' }).success).toBe(false);
+  });
+});
+
+describe('profileUpdateSchema', () => {
+  it('accepts an empty patch', () => {
+    expect(profileUpdateSchema.safeParse({}).success).toBe(true);
+  });
+
+  it('accepts a valid name and email', () => {
+    const result = profileUpdateSchema.safeParse({ name: 'Jane Doe', email: ' Jane@Example.com ' });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.email).toBe('jane@example.com');
+    }
+  });
+
+  it('rejects an invalid email', () => {
+    expect(profileUpdateSchema.safeParse({ email: 'not-an-email' }).success).toBe(false);
+  });
+
+  it('rejects a name that is too short', () => {
+    expect(profileUpdateSchema.safeParse({ name: 'J' }).success).toBe(false);
+  });
+
+  it('transforms an empty email to undefined (so the service can clear it)', () => {
+    const result = profileUpdateSchema.safeParse({ email: '' });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.email).toBeUndefined();
+    }
+  });
+
+  it('lowercases and trims a valid email', () => {
+    const result = profileUpdateSchema.safeParse({ email: '  JANE@EXAMPLE.COM  ' });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.email).toBe('jane@example.com');
+    }
   });
 });

@@ -6,6 +6,8 @@ import ProductModel, {
   type ProductStatus,
 } from '@/backend/integrations/database/models/Product';
 import type {
+  ActiveProductRecord,
+  AdminProductRecord,
   CategoryRecord,
   CollectionRecord,
   ProductRecord,
@@ -37,6 +39,9 @@ export interface ProductData {
   collections: string[];
   status: ProductStatus;
   featured: boolean;
+  materialInfo?: string;
+  manufacturingInfo?: string;
+  stockQuantity?: number;
 }
 
 export interface ProductQuery {
@@ -95,8 +100,18 @@ function toProductRecord(doc: PopulatedProduct): ProductRecord {
     collections: (doc.collections ?? []).map(toCollectionRecord),
     status: doc.status,
     featured: doc.featured,
+    materialInfo: doc.materialInfo ?? '',
+    manufacturingInfo: doc.manufacturingInfo ?? '',
     createdAt: doc.createdAt?.toISOString() ?? '',
     updatedAt: doc.updatedAt?.toISOString() ?? '',
+  };
+}
+
+/** Admin product record adds the internal-only stock count (never on storefront). */
+function toAdminProductRecord(doc: PopulatedProduct): AdminProductRecord {
+  return {
+    ...toProductRecord(doc),
+    stockQuantity: doc.stockQuantity ?? 0,
   };
 }
 
@@ -274,18 +289,61 @@ export async function findExistingCollectionIds(ids: string[]): Promise<string[]
   return docs.map((doc) => doc._id.toString());
 }
 
-export async function createProduct(data: ProductData): Promise<ProductRecord> {
+export async function createProduct(data: ProductData): Promise<AdminProductRecord> {
   await getMongoConnection();
-  const doc = await ProductModel.create(data);
-  return toProductRecord(doc as unknown as PopulatedProduct);
+  const created = await ProductModel.create(data);
+  const doc = await ProductModel.findById(created._id).populate('categories collections').exec();
+  if (!doc) {
+    throw new Error('Failed to load newly created product.');
+  }
+  return toAdminProductRecord(doc as unknown as PopulatedProduct);
 }
 
-export async function updateProduct(id: string, data: Partial<ProductData>): Promise<ProductRecord | null> {
+export async function updateProduct(id: string, data: Partial<ProductData>): Promise<AdminProductRecord | null> {
   await getMongoConnection();
   const doc = await ProductModel.findByIdAndUpdate(id, { $set: data }, { new: true, runValidators: true })
     .populate('categories collections')
     .exec();
-  return doc ? toProductRecord(doc as unknown as PopulatedProduct) : null;
+  return doc ? toAdminProductRecord(doc as unknown as PopulatedProduct) : null;
+}
+
+/** Admin listing including the internal stock count; sorted like the storefront default. */
+export async function listAdminProducts(): Promise<AdminProductRecord[]> {
+  await getMongoConnection();
+  const docs = await ProductModel.find()
+    .populate('categories collections')
+    .sort({ featured: -1, createdAt: -1 })
+    .exec();
+  return docs.map((doc) => toAdminProductRecord(doc as unknown as PopulatedProduct));
+}
+
+/** Lean active products by slug, used by order placement to price/stock-check lines. */
+export async function getActiveProductsBySlugs(slugs: string[]): Promise<ActiveProductRecord[]> {
+  if (slugs.length === 0) return [];
+  await getMongoConnection();
+  const docs = await ProductModel.find({ slug: { $in: slugs }, status: 'active' }).exec();
+  return docs.map((doc) => ({
+    id: doc._id.toString(),
+    slug: doc.slug,
+    name: doc.name,
+    price: doc.price,
+    image: doc.images?.[0] ?? '',
+    stockQuantity: doc.stockQuantity,
+  }));
+}
+
+/**
+ * Atomically decrement stock for an active product, failing when it would go
+ * negative. Returns true when exactly one product was updated.
+ */
+export async function decrementProductStock(slug: string, quantity: number): Promise<boolean> {
+  await getMongoConnection();
+  const doc = await ProductModel.findOneAndUpdate(
+    { slug, status: 'active', stockQuantity: { $gte: quantity } },
+    { $inc: { stockQuantity: -quantity } },
+    { new: true },
+  ).exec();
+  return Boolean(doc);
 }
 
 export async function deleteProduct(id: string): Promise<boolean> {

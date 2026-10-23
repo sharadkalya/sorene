@@ -36,8 +36,25 @@ export interface ProductRecord {
   collections: CollectionRecord[];
   status: ProductStatus;
   featured: boolean;
+  materialInfo: string;
+  manufacturingInfo: string;
   createdAt: string;
   updatedAt: string;
+}
+
+/** Admin-only product shape that additionally exposes the internal stock count. */
+export interface AdminProductRecord extends ProductRecord {
+  stockQuantity: number;
+}
+
+/** Lean, active-product shape used to price and stock-check order line items. */
+export interface ActiveProductRecord {
+  id: string;
+  slug: string;
+  name: string;
+  price: number;
+  image: string;
+  stockQuantity?: number;
 }
 
 /** Faceted storefront result returned by `getStorefrontCatalog`. */

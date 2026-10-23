@@ -34,6 +34,24 @@ export const addressInputSchema = z.object({
 
 export type AddressInput = z.infer<typeof addressInputSchema>;
 
+/**
+ * Profile edits for the signed-in customer. An empty email clears the saved
+ * value (the literal is transformed to `undefined`); omitting the key leaves
+ * the existing email untouched — the service distinguishes those two cases by
+ * checking whether the key was present in the raw input.
+ */
+export const profileUpdateSchema = z.object({
+  name: z.string().trim().min(2).max(100).optional(),
+  email: z
+    .union([
+      z.literal('').transform(() => undefined),
+      z.string().trim().toLowerCase().email().max(254),
+    ])
+    .optional(),
+});
+
+export type ProfileUpdateInputParsed = z.infer<typeof profileUpdateSchema>;
+
 export function formatIssues(error: z.ZodError): string {
   return error.issues.map((issue) => issue.message).join('; ');
 }
