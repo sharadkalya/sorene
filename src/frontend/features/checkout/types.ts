@@ -39,11 +39,30 @@ export interface OrderItem {
   lineTotal: number;
 }
 
-/** Mirrors the order returned by `POST /api/customer/orders`. */
+/** Mirrors the order returned by the customer orders API. */
+export type OrderStatus =
+  | 'pending'
+  | 'processing'
+  | 'ready_to_dispatch'
+  | 'dispatched'
+  | 'out_for_delivery'
+  | 'delivered'
+  | 'cancellation_requested'
+  | 'cancelled'
+  | 'refunded';
+
+export interface OrderPayment {
+  provider: string;
+  providerPaymentId?: string;
+  amountInPaise: number;
+  currency: string;
+  paidAt?: string;
+}
+
 export interface Order {
   id: string;
   number: string;
-  status: 'placed';
+  status: OrderStatus;
   subtotal: number;
   total: number;
   createdAt: string;
@@ -57,4 +76,22 @@ export interface Order {
     pincode: string;
     phone: string;
   };
+  payment?: OrderPayment;
+}
+
+/** Mirrors the payment returned by `POST /api/payments/create-order`. */
+export interface PaymentCreateResult {
+  provider: string;
+  providerOrderId: string;
+  amountInPaise: number;
+  currency: string;
+  publicKey: string;
+}
+
+/** Mirrors the result of `POST /api/payments/verify`. */
+export interface PaymentVerifyResult {
+  verified: boolean;
+  status: 'paid';
+  orderId: string;
+  orderNumber: string;
 }

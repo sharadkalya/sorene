@@ -51,6 +51,14 @@ its own identity.
 - `POST /api/webhooks/whatsapp` verifies `X-Hub-Signature-256` (HMAC-SHA256, raw body, `WHATSAPP_APP_SECRET`, constant-time) before parsing; `GET` verifies `WHATSAPP_VERIFY_TOKEN` in constant time. Both fail closed when unconfigured.
 - Provider error bodies are logged server-side only; phone numbers are masked in logs and responses. See `docs/whatsapp.md`.
 
+## Payments (Razorpay)
+
+- Credentials (`RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`) are server-only env vars read via `common/env.ts`. The key id (public) is returned in the create-order response; the secret never leaves the server. `PAYMENT_PROVIDER` selects the provider and fails closed on unknown values.
+- `POST /api/payments/create-order` requires a customer session and is rate-limited; the amount is derived from the server-side order total (never client input) and the payment is scoped to the authenticated customer. No internal order is created at this point.
+- `POST /api/payments/verify` verifies the provider signature (HMAC-SHA256 of `orderId|paymentId`, constant-time) and, only on success, places the order and marks the payment paid. A mismatch returns 400 and never marks paid; unknown or cross-customer payments return 404. Repeated verification is idempotent.
+- `POST /api/customer/orders/[id]/cancel` lets a customer mark their own not-yet-dispatched order (`pending`/`processing`) `cancellation_requested`; the order is cancelled only when an admin confirms (never by the customer alone).
+- The provider abstraction lives in `backend/integrations/payments/`; provider error bodies are logged server-side only and normalized into non-leaking `AppError`s. This mirrors the webhook-signature requirement: payments are confirmed cryptographically, never on browser reports alone. (A webhook for async confirmation is future work; see the ecommerce controls below.)
+
 ## Error handling & logging
 
 - Clients receive consistent, non-leaking errors via `jsonError` — no stack traces, DB internals, or provider responses.
@@ -78,6 +86,9 @@ its own identity.
 | `GET`/`POST /api/webhooks/whatsapp` | public; verify token (GET) / Meta HMAC signature (POST) |
 | `GET /api/customer/me` | Customer session |
 | `POST /api/customer/addresses` | Customer session |
+| `POST /api/payments/create-order` | Customer session (+ rate limit) |
+| `POST /api/payments/verify` | Customer session |
+| `POST /api/customer/orders/[id]/cancel` | Customer session |
 | `GET /`, admin pages | `/admin` and `/admin/subscribers` require admin session |
 
 ## Dependency & configuration hygiene

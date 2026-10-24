@@ -1,6 +1,18 @@
 /** API response shapes for the orders feature (no raw DB fields). */
 
-export type OrderStatus = 'placed';
+export const ORDER_STATUSES = [
+  'pending',
+  'processing',
+  'ready_to_dispatch',
+  'dispatched',
+  'out_for_delivery',
+  'delivered',
+  'cancellation_requested',
+  'cancelled',
+  'refunded',
+] as const;
+
+export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
 export interface OrderItemRecord {
   slug: string;
@@ -21,6 +33,14 @@ export interface OrderAddressRecord {
   pincode: string;
 }
 
+export interface OrderPaymentRecord {
+  provider: string;
+  providerPaymentId?: string;
+  amountInPaise: number;
+  currency: string;
+  paidAt?: string;
+}
+
 /** Safe customer-facing order shape — never includes the customer id/phone. */
 export interface OrderRecord {
   id: string;
@@ -31,6 +51,7 @@ export interface OrderRecord {
   total: number;
   createdAt: string;
   address: OrderAddressRecord;
+  payment?: OrderPaymentRecord;
 }
 
 /** Admin shape that adds the owning customer identity for support/ops. */

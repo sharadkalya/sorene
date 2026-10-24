@@ -127,6 +127,21 @@ export function getWhatsAppApiVersion(): string {
   return value;
 }
 
+/** Active payments provider id (e.g. `razorpay`). Defaults to `razorpay`. */
+export function getPaymentProviderId(): string {
+  return process.env.PAYMENT_PROVIDER?.trim() || 'razorpay';
+}
+
+/** Razorpay API key ID (the public key; also used in Basic auth server-side). */
+export function getRazorpayKeyId(): string {
+  return readRequired('RAZORPAY_KEY_ID');
+}
+
+/** Razorpay API key secret. Server-only — never prefix with NEXT_PUBLIC_. */
+export function getRazorpayKeySecret(): string {
+  return readRequired('RAZORPAY_KEY_SECRET');
+}
+
 /** True during the Next.js production build phase. */
 export function isBuildPhase(): boolean {
   return process.env.NEXT_PHASE === 'phase-production-build';

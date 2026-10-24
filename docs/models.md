@@ -159,8 +159,8 @@ File: `src/backend/integrations/database/models/Order.ts`
 Collection: `orders`
 Repository: `src/backend/features/orders/orders.repository.ts`
 
-A placed order. Created by `POST /api/customer/orders`; admin viewing happens via
-`GET /api/admin/orders`.
+A placed order. Created **after** a successful payment (`POST /api/payments/verify`); admin
+viewing happens via `GET /api/admin/orders`.
 
 | Field | Type | Constraints |
 | --- | --- | --- |
@@ -170,9 +170,20 @@ A placed order. Created by `POST /api/customer/orders`; admin viewing happens vi
 | `address` | `Address` subdocument | snapshot of the delivery address |
 | `items` | `[OrderItem]` | array of line items (see below) |
 | `subtotal` | `Number` | sum of line totals, computed server-side |
-| `total` | `Number` | equals `subtotal` (no shipping/payment implemented yet) |
-| `status` | `String` | enum `placed`, default `placed` |
+| `total` | `Number` | equals `subtotal` (no shipping implemented yet) |
+| `status` | `String` | enum `pending` / `processing` / `ready_to_dispatch` / `dispatched` / `out_for_delivery` / `delivered` / `cancellation_requested` / `cancelled` / `refunded`, default `pending` |
+| `payment` | `OrderPayment` subdocument | payment confirmation (see below), optional until paid |
 | `createdAt` / `updatedAt` | `Date` | from `timestamps: true` |
+
+OrderPayment subdocument:
+
+| Field | Type | Constraints |
+| --- | --- | --- |
+| `provider` | `String` | required; provider id (e.g. `razorpay`) |
+| `providerPaymentId` | `String` | optional; the gateway's payment id |
+| `amountInPaise` | `Number` | required, ≥0 |
+| `currency` | `String` | required, default `INR` |
+| `paidAt` | `Date` | optional; when the payment was captured |
 
 OrderItem subdocument:
 
@@ -185,11 +196,11 @@ OrderItem subdocument:
 | `quantity` | `Number` | required, integer ≥1 |
 | `lineTotal` | `Number` | `price × quantity` |
 
-Indexes: `{ number: 1 }` (unique), `{ customerId: 1 }`, `{ createdAt: -1 }`.
+Indexes: `{ number: 1 }` (unique), `{ customerId: 1 }`, `{ createdAt: -1 }`, `{ status: 1, createdAt: -1 }`.
 
 Prices are always resolved server-side from the catalog; the client only submits slugs and
 quantities. Products with a positive `stockQuantity` are checked and atomically decremented
-when an order is placed, so stock cannot be oversold.
+when the order is placed (after payment verification), so stock cannot be oversold.
 
 ## OtpChallenge
 
@@ -210,6 +221,35 @@ stored only as an HMAC hash (keyed by `CUSTOMER_SESSION_SECRET`), never in plain
 | `createdAt` / `updatedAt` | `Date` | from `timestamps: true` |
 
 Indexes: `{ phone: 1 }` (unique — one active code per number), `{ expiresAt: 1 }` TTL.
+
+## Payment
+
+File: `src/backend/integrations/database/models/Payment.ts`
+Collection: `payments`
+Repository: `src/backend/features/payments/payment.repository.ts`
+
+Tracks a payment attempt created by the active payments provider (`PAYMENT_PROVIDER`) for a
+checkout (address + items). The internal order is created only after the payment verifies;
+`orderId` links the paid payment to that order.
+
+| Field | Type | Constraints |
+| --- | --- | --- |
+| `provider` | `String` | required, trimmed; provider id (e.g. `razorpay`) |
+| `providerOrderId` | `String` | required, unique, trimmed; the gateway's order id |
+| `providerPaymentId` | `String` | optional; set when the payment is marked paid |
+| `orderId` | `ObjectId ref Order` | optional; set once the payment is verified and the order placed |
+| `customerId` | `ObjectId ref Customer` | required; owning customer (authorization scope) |
+| `amountInPaise` | `Number` | required, ≥0; derived from the catalog total, never client-supplied |
+| `currency` | `String` | required, trimmed, default `INR` |
+| `status` | `String` | enum `created` / `paid` / `failed`, default `created` |
+| `checkout` | `Checkout` subdocument | address id + items snapshot used to place the order after payment |
+| `createdAt` / `updatedAt` | `Date` | from `timestamps: true` |
+
+Indexes: `{ providerOrderId: 1 }` (also enforces uniqueness), `{ orderId: 1 }`, `{ customerId: 1 }`.
+
+`markPaymentPaid` guards its update with `status: 'created'` so a concurrent duplicate
+verification returns null instead of double-writing — callers treat null as "already paid".
+`markPaymentFailed` likewise only downgrades `created` payments (failed signature verification).
 
 ## Adding a new model
 

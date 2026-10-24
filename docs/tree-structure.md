@@ -48,6 +48,9 @@ sorene/
     │       ├── status/r2/route.ts        # Admin R2 health check (upload/delete)
     │       ├── status/whatsapp/route.ts  # Admin WhatsApp test send (hello_world template)
     │       ├── webhooks/whatsapp/route.ts # Meta webhook (verify + signed status updates)
+    │       ├── payments/
+    │       │   ├── create-order/route.ts # Customer: create a payment order
+    │       │   └── verify/route.ts       # Customer: verify payment signature
     │       └── admin/
     │           ├── login/route.ts        # Credential check + session
     │           ├── logout/route.ts
@@ -62,12 +65,14 @@ sorene/
     │   │   ├── subscribers/      # types, validation, repository, service
     │   │   ├── settings/         # validation, repository, service
     │   │   ├── catalog/          # types, validation, repository, service, slug
+    │   │   ├── payments/         # types, validation, repository, service (payment order + verify)
     │   │   └── whatsapp/         # types, validation, service (test send, webhook)
     │   └── integrations/
     │       ├── database/
     │       │   ├── connection.ts         # Shared Mongoose connection
     │       │   └── models/               # Subscriber, SiteSettings, Category, Collection, Product
     │       ├── email/            # email-client + stay-tuned-template
+    │       ├── payments/         # provider contract + factory + razorpay client/signature
     │       ├── whatsapp/         # Cloud API client + webhook signature check
     │       └── storage/
     │           ├── r2-client.ts          # S3 client for Cloudflare R2

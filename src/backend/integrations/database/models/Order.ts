@@ -1,6 +1,15 @@
 import mongoose, { Schema, type Types } from 'mongoose';
 
-export type OrderStatus = 'placed';
+export type OrderStatus =
+  | 'pending'
+  | 'processing'
+  | 'ready_to_dispatch'
+  | 'dispatched'
+  | 'out_for_delivery'
+  | 'delivered'
+  | 'cancellation_requested'
+  | 'cancelled'
+  | 'refunded';
 
 export interface IOrderItem {
   slug: string;
@@ -21,6 +30,14 @@ export interface IOrderAddress {
   pincode: string;
 }
 
+export interface IOrderPayment {
+  provider: string;
+  providerPaymentId?: string;
+  amountInPaise: number;
+  currency: string;
+  paidAt?: Date;
+}
+
 export interface IOrder {
   number: string;
   customerId: Types.ObjectId;
@@ -30,6 +47,7 @@ export interface IOrder {
   subtotal: number;
   total: number;
   status: OrderStatus;
+  payment?: IOrderPayment;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -59,6 +77,17 @@ const OrderAddressSchema = new Schema<IOrderAddress>(
   { _id: false },
 );
 
+const OrderPaymentSchema = new Schema<IOrderPayment>(
+  {
+    provider: { type: String, required: true, trim: true },
+    providerPaymentId: { type: String, trim: true },
+    amountInPaise: { type: Number, required: true, min: 0 },
+    currency: { type: String, required: true, trim: true, default: 'INR' },
+    paidAt: { type: Date },
+  },
+  { _id: false },
+);
+
 const OrderSchema = new Schema<IOrder>(
   {
     number: { type: String, required: true },
@@ -68,7 +97,22 @@ const OrderSchema = new Schema<IOrder>(
     items: { type: [OrderItemSchema], required: true },
     subtotal: { type: Number, required: true, min: 0 },
     total: { type: Number, required: true, min: 0 },
-    status: { type: String, enum: ['placed'], default: 'placed' },
+    status: {
+      type: String,
+      enum: [
+        'pending',
+        'processing',
+        'ready_to_dispatch',
+        'dispatched',
+        'out_for_delivery',
+        'delivered',
+        'cancellation_requested',
+        'cancelled',
+        'refunded',
+      ],
+      default: 'pending',
+    },
+    payment: { type: OrderPaymentSchema },
   },
   { timestamps: true },
 );
@@ -76,5 +120,6 @@ const OrderSchema = new Schema<IOrder>(
 OrderSchema.index({ number: 1 }, { unique: true });
 OrderSchema.index({ customerId: 1 });
 OrderSchema.index({ createdAt: -1 });
+OrderSchema.index({ status: 1, createdAt: -1 });
 
 export default mongoose.models.Order || mongoose.model<IOrder>('Order', OrderSchema);

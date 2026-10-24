@@ -14,6 +14,7 @@ vi.mock('./orders.repository', () => ({
   listOrdersByCustomer: vi.fn(),
   getOrderById: vi.fn(),
   listAllOrders: vi.fn(),
+  updateOrderStatus: vi.fn(),
 }));
 
 import { getActiveProductsBySlugs, decrementProductStock } from '../catalog/catalog.repository';
@@ -23,12 +24,14 @@ import {
   getOrderById,
   listAllOrders,
   listOrdersByCustomer,
+  updateOrderStatus,
 } from './orders.repository';
 import {
   getCustomerOrder,
   listAdminOrders,
   listCustomerOrders,
   placeOrder,
+  requestOrderCancellation,
 } from './orders.service';
 
 const getActiveProductsBySlugsMock = vi.mocked(getActiveProductsBySlugs);
@@ -38,6 +41,7 @@ const repoCreateOrderMock = vi.mocked(repoCreateOrder);
 const listOrdersByCustomerMock = vi.mocked(listOrdersByCustomer);
 const getOrderByIdMock = vi.mocked(getOrderById);
 const listAllOrdersMock = vi.mocked(listAllOrders);
+const updateOrderStatusMock = vi.mocked(updateOrderStatus);
 
 const address = {
   id: 'a1',
@@ -75,7 +79,7 @@ const product = {
 const orderRecord = {
   id: 'o1',
   number: 'SR-20261023-1234',
-  status: 'placed' as const,
+  status: 'pending' as const,
   items: [
     {
       slug: 'the-arch-bag',
@@ -261,14 +265,59 @@ describe('customer order access', () => {
 });
 
 describe('order listing', () => {
-  it('lists a customer’s orders and all admin orders', async () => {
+  it('lists a customer’s orders and paginated admin orders', async () => {
     listOrdersByCustomerMock.mockResolvedValue([orderRecord]);
-    listAllOrdersMock.mockResolvedValue([{ ...orderRecord, customerId: 'c1', customerPhone: '+919876543210' }]);
+    listAllOrdersMock.mockResolvedValue({
+      orders: [{ ...orderRecord, customerId: 'c1', customerPhone: '+919876543210' }],
+      total: 1,
+      page: 1,
+      totalPages: 1,
+    });
 
     await expect(listCustomerOrders('c1')).resolves.toEqual([orderRecord]);
-    await expect(listAdminOrders()).resolves.toMatchObject([{ customerId: 'c1' }]);
+    const admin = await listAdminOrders({ page: 1, limit: 20 });
+    expect(admin).toMatchObject({ total: 1, page: 1, totalPages: 1 });
+    expect(admin.orders).toEqual([expect.objectContaining({ customerId: 'c1' })]);
 
     expect(listOrdersByCustomerMock).toHaveBeenCalledWith('c1');
-    expect(listAllOrdersMock).toHaveBeenCalled();
+    expect(listAllOrdersMock).toHaveBeenCalledWith({ page: 1, limit: 20 });
+  });
+});
+
+describe('requestOrderCancellation', () => {
+  const adminOrder = { ...orderRecord, customerId: 'c1', customerPhone: '+919876543210' };
+
+  it.each(['pending', 'processing'] as const)('marks a %s order as cancellation_requested', async (status) => {
+    getOrderByIdMock.mockResolvedValue({ ...adminOrder, status });
+    updateOrderStatusMock.mockResolvedValue({ ...adminOrder, status: 'cancellation_requested' });
+
+    const result = await requestOrderCancellation('c1', 'o1');
+
+    expect(result.status).toBe('cancellation_requested');
+    expect(result).not.toHaveProperty('customerId');
+    expect(updateOrderStatusMock).toHaveBeenCalledWith('o1', 'cancellation_requested');
+  });
+
+  it('returns NOT_FOUND for a missing order', async () => {
+    getOrderByIdMock.mockResolvedValue(null);
+    await expect(requestOrderCancellation('c1', 'missing')).rejects.toMatchObject({ code: 'NOT_FOUND' });
+  });
+
+  it('returns NOT_FOUND when the order belongs to another customer', async () => {
+    getOrderByIdMock.mockResolvedValue({ ...adminOrder, customerId: 'c2' });
+    await expect(requestOrderCancellation('c1', 'o1')).rejects.toMatchObject({ code: 'NOT_FOUND' });
+  });
+
+  it.each([
+    'dispatched',
+    'out_for_delivery',
+    'delivered',
+    'cancellation_requested',
+    'cancelled',
+    'refunded',
+  ] as const)('rejects cancellation for a %s order', async (status) => {
+    getOrderByIdMock.mockResolvedValue({ ...adminOrder, status });
+    await expect(requestOrderCancellation('c1', 'o1')).rejects.toMatchObject({ code: 'CONFLICT' });
+    expect(updateOrderStatusMock).not.toHaveBeenCalled();
   });
 });

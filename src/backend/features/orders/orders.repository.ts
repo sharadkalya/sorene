@@ -2,11 +2,14 @@ import { getMongoConnection } from '@/backend/integrations/database/connection';
 import OrderModel, {
   type IOrderAddress,
   type IOrderItem,
+  type IOrderPayment,
+  type OrderStatus,
 } from '@/backend/integrations/database/models/Order';
 import type {
   AdminOrderRecord,
   OrderAddressRecord,
   OrderItemRecord,
+  OrderPaymentRecord,
   OrderRecord,
 } from './orders.types';
 
@@ -34,6 +37,14 @@ export interface OrderAddressData {
   pincode: string;
 }
 
+export interface OrderPaymentData {
+  provider: string;
+  providerPaymentId?: string;
+  amountInPaise: number;
+  currency: string;
+  paidAt?: string;
+}
+
 export interface OrderData {
   customerId: string;
   customerPhone: string;
@@ -41,6 +52,7 @@ export interface OrderData {
   items: OrderItemData[];
   subtotal: number;
   total: number;
+  payment?: OrderPaymentData;
 }
 
 type CustomerIdLike = {
@@ -59,10 +71,18 @@ type OrderDoc = {
   items: IOrderItem[];
   subtotal: number;
   total: number;
-  status: 'placed';
+  status: string;
+  payment?: IOrderPayment;
   createdAt?: Date;
   updatedAt?: Date;
 };
+
+/** Legacy orders were created with `status: 'placed'` or `completed`; map them onto the current lifecycle. */
+function normalizeStatus(status: unknown): OrderStatus {
+  if (status === 'placed') return 'pending';
+  if (status === 'completed') return 'delivered';
+  return status as OrderStatus;
+}
 
 function toOrderItemRecord(item: IOrderItem): OrderItemRecord {
   return {
@@ -87,16 +107,28 @@ function toOrderAddressRecord(address: IOrderAddress): OrderAddressRecord {
   };
 }
 
+function toOrderPaymentRecord(payment: IOrderPayment | undefined): OrderPaymentRecord | undefined {
+  if (!payment) return undefined;
+  return {
+    provider: payment.provider,
+    providerPaymentId: payment.providerPaymentId,
+    amountInPaise: payment.amountInPaise,
+    currency: payment.currency,
+    paidAt: payment.paidAt?.toISOString(),
+  };
+}
+
 function toOrderRecord(doc: OrderDoc): OrderRecord {
   return {
     id: doc._id.toString(),
     number: doc.number,
-    status: doc.status,
+    status: normalizeStatus(doc.status),
     items: (doc.items ?? []).map(toOrderItemRecord),
     subtotal: doc.subtotal,
     total: doc.total,
     createdAt: doc.createdAt?.toISOString() ?? '',
     address: toOrderAddressRecord(doc.address),
+    payment: toOrderPaymentRecord(doc.payment),
   };
 }
 
@@ -141,7 +173,8 @@ export async function createOrder(data: OrderData): Promise<OrderRecord> {
         items: data.items,
         subtotal: data.subtotal,
         total: data.total,
-        status: 'placed',
+        status: 'pending',
+        payment: data.payment,
         number: generateOrderNumber(),
       });
       return toOrderRecord(doc as unknown as OrderDoc);
@@ -169,11 +202,51 @@ export async function getOrderById(id: string): Promise<AdminOrderRecord | null>
   return doc ? toAdminOrderRecord(doc as unknown as OrderDoc) : null;
 }
 
-export async function listAllOrders(): Promise<AdminOrderRecord[]> {
+export interface ListOrdersQuery {
+  status?: OrderStatus;
+  page?: number;
+  limit?: number;
+}
+
+export interface PaginatedOrders {
+  orders: AdminOrderRecord[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
+/** List orders, optionally filtered by status and paginated. */
+export async function listAllOrders(query: ListOrdersQuery = {}): Promise<PaginatedOrders> {
   await getMongoConnection();
-  const docs = await OrderModel.find()
-    .sort({ createdAt: -1 })
-    .populate('customerId', 'name phone')
-    .exec();
-  return docs.map((doc) => toAdminOrderRecord(doc as unknown as OrderDoc));
+
+  const page = Math.max(1, query.page ?? 1);
+  const limit = Math.min(100, Math.max(1, query.limit ?? 20));
+  const filter = query.status ? { status: query.status } : {};
+
+  const [docs, total] = await Promise.all([
+    OrderModel.find(filter)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .populate('customerId', 'name phone')
+      .exec(),
+    OrderModel.countDocuments(filter).exec(),
+  ]);
+
+  return {
+    orders: docs.map((doc) => toAdminOrderRecord(doc as unknown as OrderDoc)),
+    total,
+    page,
+    totalPages: Math.max(1, Math.ceil(total / limit)),
+  };
+}
+
+/** Update an order's status; returns null when the order does not exist. */
+export async function updateOrderStatus(
+  id: string,
+  status: OrderStatus,
+): Promise<AdminOrderRecord | null> {
+  await getMongoConnection();
+  const doc = await OrderModel.findByIdAndUpdate(id, { $set: { status } }, { new: true }).exec();
+  return doc ? toAdminOrderRecord(doc as unknown as OrderDoc) : null;
 }
