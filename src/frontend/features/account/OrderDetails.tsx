@@ -2,10 +2,12 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import Badge from '@/frontend/components/Badge';
 import Button from '@/frontend/components/Button';
 import { formatPrice } from '@/frontend/features/storefront/format';
-import { requestOrderCancellation } from '@/frontend/features/checkout/api';
-import type { Order } from '@/frontend/features/checkout/types';
+import { requestOrderCancellation, requestReturn } from '@/frontend/features/checkout/api';
+import type { Order, ReturnStatus } from '@/frontend/features/checkout/types';
+import { RETURN_STATUS_BADGE, RETURN_STATUS_LABELS } from '@/frontend/features/orders/order-status';
 import OrderStatusBadge from './OrderStatusBadge';
 
 const PROVIDER_LABELS: Record<string, string> = {
@@ -17,6 +19,24 @@ export default function OrderDetails({ order }: { order: Order }) {
   const [status, setStatus] = useState(order.status);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [returnStatus, setReturnStatus] = useState<ReturnStatus | null>(order.return?.status ?? null);
+  const [returnBusy, setReturnBusy] = useState(false);
+  const [returnError, setReturnError] = useState<string | null>(null);
+
+  async function handleReturnRequest() {
+    setReturnBusy(true);
+    setReturnError(null);
+    try {
+      const updated = await requestReturn(order.id);
+      setReturnStatus(updated.return?.status ?? 'return_requested');
+    } catch (err) {
+      setReturnError(
+        err instanceof Error ? err.message : 'We could not request a return. Please try again.',
+      );
+    } finally {
+      setReturnBusy(false);
+    }
+  }
 
   async function handleCancelRequest() {
     setBusy(true);
@@ -156,6 +176,39 @@ export default function OrderDetails({ order }: { order: Order }) {
           </section>
         )}
 
+        {returnStatus ? (
+          <section className="card bg-base-100 border border-base-300">
+            <div className="card-body gap-3">
+              <div className="flex items-center justify-between gap-4">
+                <h2 className="font-semibold">Return</h2>
+                <Badge variant={RETURN_STATUS_BADGE[returnStatus]} size="sm">
+                  {RETURN_STATUS_LABELS[returnStatus]}
+                </Badge>
+              </div>
+              {order.return?.adminNote && (
+                <p className="text-sm text-base-content/70">
+                  Note from our team: {order.return.adminNote}
+                </p>
+              )}
+            </div>
+          </section>
+        ) : order.returnableUntil ? (
+          <section className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-base-content/60">
+              Return this order by{' '}
+              {new Date(order.returnableUntil).toLocaleDateString('en-IN', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+              })}
+              .
+            </p>
+            <Button onClick={handleReturnRequest} variant="outline" disabled={returnBusy}>
+              {returnBusy ? <span className="loading loading-spinner loading-sm" /> : 'Return order'}
+            </Button>
+          </section>
+        ) : null}
+
         {status === 'cancellation_requested' && (
           <div className="alert alert-info text-sm">
             Cancellation requested — our team will review and confirm it.
@@ -163,6 +216,7 @@ export default function OrderDetails({ order }: { order: Order }) {
         )}
 
         {error && <div className="alert alert-error text-sm">{error}</div>}
+        {returnError && <div className="alert alert-error text-sm">{returnError}</div>}
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import OrderModel, {
   type IOrderAddress,
   type IOrderItem,
   type IOrderPayment,
+  type IOrderReturn,
   type OrderStatus,
 } from '@/backend/integrations/database/models/Order';
 import type {
@@ -11,6 +12,8 @@ import type {
   OrderItemRecord,
   OrderPaymentRecord,
   OrderRecord,
+  OrderReturnRecord,
+  ReturnStatus,
 } from './orders.types';
 
 /**
@@ -73,6 +76,8 @@ type OrderDoc = {
   total: number;
   status: string;
   payment?: IOrderPayment;
+  deliveredAt?: Date;
+  return?: IOrderReturn;
   createdAt?: Date;
   updatedAt?: Date;
 };
@@ -118,6 +123,16 @@ function toOrderPaymentRecord(payment: IOrderPayment | undefined): OrderPaymentR
   };
 }
 
+function toOrderReturnRecord(returnDoc: IOrderReturn | undefined): OrderReturnRecord | undefined {
+  if (!returnDoc) return undefined;
+  return {
+    status: returnDoc.status,
+    requestedAt: returnDoc.requestedAt?.toISOString() ?? '',
+    adminNote: returnDoc.adminNote,
+    decidedAt: returnDoc.decidedAt?.toISOString(),
+  };
+}
+
 function toOrderRecord(doc: OrderDoc): OrderRecord {
   return {
     id: doc._id.toString(),
@@ -127,8 +142,10 @@ function toOrderRecord(doc: OrderDoc): OrderRecord {
     subtotal: doc.subtotal,
     total: doc.total,
     createdAt: doc.createdAt?.toISOString() ?? '',
+    deliveredAt: doc.deliveredAt?.toISOString(),
     address: toOrderAddressRecord(doc.address),
     payment: toOrderPaymentRecord(doc.payment),
+    return: toOrderReturnRecord(doc.return),
   };
 }
 
@@ -241,12 +258,37 @@ export async function listAllOrders(query: ListOrdersQuery = {}): Promise<Pagina
   };
 }
 
-/** Update an order's status; returns null when the order does not exist. */
+/** Update an order's status; sets `deliveredAt` when the order is delivered. */
 export async function updateOrderStatus(
   id: string,
   status: OrderStatus,
 ): Promise<AdminOrderRecord | null> {
   await getMongoConnection();
-  const doc = await OrderModel.findByIdAndUpdate(id, { $set: { status } }, { new: true }).exec();
+  const update: Record<string, unknown> = { status };
+  if (status === 'delivered') {
+    update.deliveredAt = new Date();
+  }
+  const doc = await OrderModel.findByIdAndUpdate(id, { $set: update }, { new: true }).exec();
+  return doc ? toAdminOrderRecord(doc as unknown as OrderDoc) : null;
+}
+
+export interface OrderReturnData {
+  status: ReturnStatus;
+  requestedAt: string | Date;
+  adminNote?: string;
+  decidedAt?: string | Date;
+}
+
+/** Replace the order's return subdocument (create, decide, or progress a return). */
+export async function setOrderReturn(
+  id: string,
+  returnDoc: OrderReturnData,
+): Promise<AdminOrderRecord | null> {
+  await getMongoConnection();
+  const doc = await OrderModel.findByIdAndUpdate(
+    id,
+    { $set: { return: returnDoc } },
+    { new: true },
+  ).exec();
   return doc ? toAdminOrderRecord(doc as unknown as OrderDoc) : null;
 }

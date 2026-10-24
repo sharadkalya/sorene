@@ -173,6 +173,8 @@ viewing happens via `GET /api/admin/orders`.
 | `total` | `Number` | equals `subtotal` (no shipping implemented yet) |
 | `status` | `String` | enum `pending` / `processing` / `ready_to_dispatch` / `dispatched` / `out_for_delivery` / `delivered` / `cancellation_requested` / `cancelled` / `refunded`, default `pending` |
 | `payment` | `OrderPayment` subdocument | payment confirmation (see below), optional until paid |
+| `deliveredAt` | `Date` | optional; set when the order is marked `delivered` — starts the return window |
+| `return` | `Return` subdocument | return request (see below), optional until a return is requested |
 | `createdAt` / `updatedAt` | `Date` | from `timestamps: true` |
 
 OrderPayment subdocument:
@@ -184,6 +186,15 @@ OrderPayment subdocument:
 | `amountInPaise` | `Number` | required, ≥0 |
 | `currency` | `String` | required, default `INR` |
 | `paidAt` | `Date` | optional; when the payment was captured |
+
+Return subdocument:
+
+| Field | Type | Constraints |
+| --- | --- | --- |
+| `status` | `String` | enum `return_requested` / `return_approved` / `return_rejected` / `pickup_scheduled` / `picked_up` / `returned` / `refunded` |
+| `requestedAt` | `Date` | required; when the customer requested the return |
+| `adminNote` | `String` | optional; customer-visible note from the admin |
+| `decidedAt` | `Date` | optional; when the admin approved/rejected the request |
 
 OrderItem subdocument:
 

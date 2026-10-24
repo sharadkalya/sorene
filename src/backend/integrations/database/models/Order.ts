@@ -38,6 +38,22 @@ export interface IOrderPayment {
   paidAt?: Date;
 }
 
+export type ReturnStatus =
+  | 'return_requested'
+  | 'return_approved'
+  | 'return_rejected'
+  | 'pickup_scheduled'
+  | 'picked_up'
+  | 'returned'
+  | 'refunded';
+
+export interface IOrderReturn {
+  status: ReturnStatus;
+  requestedAt: Date;
+  adminNote?: string;
+  decidedAt?: Date;
+}
+
 export interface IOrder {
   number: string;
   customerId: Types.ObjectId;
@@ -48,6 +64,8 @@ export interface IOrder {
   total: number;
   status: OrderStatus;
   payment?: IOrderPayment;
+  deliveredAt?: Date;
+  return?: IOrderReturn;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -88,6 +106,28 @@ const OrderPaymentSchema = new Schema<IOrderPayment>(
   { _id: false },
 );
 
+const OrderReturnSchema = new Schema<IOrderReturn>(
+  {
+    status: {
+      type: String,
+      enum: [
+        'return_requested',
+        'return_approved',
+        'return_rejected',
+        'pickup_scheduled',
+        'picked_up',
+        'returned',
+        'refunded',
+      ],
+      required: true,
+    },
+    requestedAt: { type: Date, required: true },
+    adminNote: { type: String, trim: true },
+    decidedAt: { type: Date },
+  },
+  { _id: false },
+);
+
 const OrderSchema = new Schema<IOrder>(
   {
     number: { type: String, required: true },
@@ -113,6 +153,8 @@ const OrderSchema = new Schema<IOrder>(
       default: 'pending',
     },
     payment: { type: OrderPaymentSchema },
+    deliveredAt: { type: Date },
+    return: { type: OrderReturnSchema },
   },
   { timestamps: true },
 );

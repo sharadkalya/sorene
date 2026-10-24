@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../catalog/catalog.repository', () => ({
   getActiveProductsBySlugs: vi.fn(),
@@ -15,6 +15,7 @@ vi.mock('./orders.repository', () => ({
   getOrderById: vi.fn(),
   listAllOrders: vi.fn(),
   updateOrderStatus: vi.fn(),
+  setOrderReturn: vi.fn(),
 }));
 
 import { getActiveProductsBySlugs, decrementProductStock } from '../catalog/catalog.repository';
@@ -24,14 +25,18 @@ import {
   getOrderById,
   listAllOrders,
   listOrdersByCustomer,
+  setOrderReturn,
   updateOrderStatus,
 } from './orders.repository';
 import {
+  decideReturn,
   getCustomerOrder,
   listAdminOrders,
   listCustomerOrders,
   placeOrder,
   requestOrderCancellation,
+  requestReturn,
+  updateReturnStatus,
 } from './orders.service';
 
 const getActiveProductsBySlugsMock = vi.mocked(getActiveProductsBySlugs);
@@ -42,6 +47,7 @@ const listOrdersByCustomerMock = vi.mocked(listOrdersByCustomer);
 const getOrderByIdMock = vi.mocked(getOrderById);
 const listAllOrdersMock = vi.mocked(listAllOrders);
 const updateOrderStatusMock = vi.mocked(updateOrderStatus);
+const setOrderReturnMock = vi.mocked(setOrderReturn);
 
 const address = {
   id: 'a1',
@@ -106,6 +112,11 @@ const orderRecord = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  process.env.RETURN_WINDOW_DAYS = '14';
+});
+
+afterEach(() => {
+  delete process.env.RETURN_WINDOW_DAYS;
 });
 
 describe('placeOrder', () => {
@@ -319,5 +330,134 @@ describe('requestOrderCancellation', () => {
     getOrderByIdMock.mockResolvedValue({ ...adminOrder, status });
     await expect(requestOrderCancellation('c1', 'o1')).rejects.toMatchObject({ code: 'CONFLICT' });
     expect(updateOrderStatusMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('requestReturn', () => {
+  const recentDeliveredAt = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
+  const oldDeliveredAt = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const deliveredOrder = {
+    ...orderRecord,
+    status: 'delivered' as const,
+    customerId: 'c1',
+    customerPhone: '+919876543210',
+    deliveredAt: recentDeliveredAt,
+  };
+
+  it('requests a return for a delivered order within the window', async () => {
+    getOrderByIdMock.mockResolvedValue(deliveredOrder);
+    setOrderReturnMock.mockResolvedValue({
+      ...deliveredOrder,
+      return: { status: 'return_requested', requestedAt: recentDeliveredAt },
+    });
+
+    const result = await requestReturn('c1', 'o1');
+
+    expect(result.return?.status).toBe('return_requested');
+    expect(setOrderReturnMock).toHaveBeenCalledWith('o1', {
+      status: 'return_requested',
+      requestedAt: expect.any(Date),
+    });
+  });
+
+  it('returns NOT_FOUND for a missing or foreign order', async () => {
+    getOrderByIdMock.mockResolvedValue(null);
+    await expect(requestReturn('c1', 'missing')).rejects.toMatchObject({ code: 'NOT_FOUND' });
+
+    getOrderByIdMock.mockResolvedValue({ ...deliveredOrder, customerId: 'c2' });
+    await expect(requestReturn('c1', 'o1')).rejects.toMatchObject({ code: 'NOT_FOUND' });
+  });
+
+  it('rejects returns for orders that are not delivered', async () => {
+    getOrderByIdMock.mockResolvedValue({ ...orderRecord, customerId: 'c1', customerPhone: '+919876543210' });
+
+    await expect(requestReturn('c1', 'o1')).rejects.toMatchObject({ code: 'CONFLICT' });
+    expect(setOrderReturnMock).not.toHaveBeenCalled();
+  });
+
+  it('rejects a second return request', async () => {
+    getOrderByIdMock.mockResolvedValue({
+      ...deliveredOrder,
+      return: { status: 'return_requested', requestedAt: recentDeliveredAt },
+    });
+
+    await expect(requestReturn('c1', 'o1')).rejects.toMatchObject({ code: 'CONFLICT' });
+    expect(setOrderReturnMock).not.toHaveBeenCalled();
+  });
+
+  it('rejects a return after the window has expired', async () => {
+    getOrderByIdMock.mockResolvedValue({ ...deliveredOrder, deliveredAt: oldDeliveredAt });
+
+    await expect(requestReturn('c1', 'o1')).rejects.toMatchObject({ code: 'CONFLICT' });
+    expect(setOrderReturnMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('decideReturn', () => {
+  const pendingReturn = {
+    ...orderRecord,
+    status: 'delivered' as const,
+    customerId: 'c1',
+    customerPhone: '+919876543210',
+    return: { status: 'return_requested' as const, requestedAt: '2026-10-24T00:00:00.000Z' },
+  };
+
+  it('approves a pending return with an optional note', async () => {
+    getOrderByIdMock.mockResolvedValue(pendingReturn);
+    setOrderReturnMock.mockResolvedValue({
+      ...pendingReturn,
+      return: {
+        status: 'return_approved',
+        requestedAt: '2026-10-24T00:00:00.000Z',
+        adminNote: 'Approved',
+        decidedAt: '2026-10-24T00:00:00.000Z',
+      },
+    });
+
+    const result = await decideReturn('o1', { status: 'return_approved', note: 'Approved' });
+
+    expect(result.return?.status).toBe('return_approved');
+    expect(setOrderReturnMock).toHaveBeenCalledWith(
+      'o1',
+      expect.objectContaining({ status: 'return_approved', adminNote: 'Approved' }),
+    );
+  });
+
+  it('rejects when there is no pending return', async () => {
+    getOrderByIdMock.mockResolvedValue({ ...orderRecord, customerId: 'c1', customerPhone: '+919876543210' });
+
+    await expect(decideReturn('o1', { status: 'return_approved' })).rejects.toMatchObject({
+      code: 'CONFLICT',
+    });
+    expect(setOrderReturnMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('updateReturnStatus', () => {
+  it('advances an active return', async () => {
+    const order = {
+      ...orderRecord,
+      status: 'delivered' as const,
+      customerId: 'c1',
+      customerPhone: '+919876543210',
+      return: { status: 'return_approved' as const, requestedAt: '2026-10-24T00:00:00.000Z' },
+    };
+    getOrderByIdMock.mockResolvedValue(order);
+    setOrderReturnMock.mockResolvedValue({
+      ...order,
+      return: { ...order.return, status: 'pickup_scheduled' },
+    });
+
+    const result = await updateReturnStatus('o1', 'pickup_scheduled');
+
+    expect(result.return?.status).toBe('pickup_scheduled');
+  });
+
+  it('rejects when there is no active return', async () => {
+    getOrderByIdMock.mockResolvedValue({ ...orderRecord, customerId: 'c1', customerPhone: '+919876543210' });
+
+    await expect(updateReturnStatus('o1', 'pickup_scheduled')).rejects.toMatchObject({
+      code: 'CONFLICT',
+    });
   });
 });

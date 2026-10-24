@@ -142,6 +142,15 @@ export function getRazorpayKeySecret(): string {
   return readRequired('RAZORPAY_KEY_SECRET');
 }
 
+/** Number of days after delivery during which a customer may request a return. */
+export function getReturnWindowDays(): number {
+  const days = Number(readRequired('RETURN_WINDOW_DAYS'));
+  if (!Number.isInteger(days) || days < 1) {
+    throw new Error('Invalid RETURN_WINDOW_DAYS: expected a positive integer');
+  }
+  return days;
+}
+
 /** True during the Next.js production build phase. */
 export function isBuildPhase(): boolean {
   return process.env.NEXT_PHASE === 'phase-production-build';

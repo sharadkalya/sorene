@@ -59,6 +59,22 @@ export interface OrderPayment {
   paidAt?: string;
 }
 
+export type ReturnStatus =
+  | 'return_requested'
+  | 'return_approved'
+  | 'return_rejected'
+  | 'pickup_scheduled'
+  | 'picked_up'
+  | 'returned'
+  | 'refunded';
+
+export interface OrderReturn {
+  status: ReturnStatus;
+  requestedAt: string;
+  adminNote?: string;
+  decidedAt?: string;
+}
+
 export interface Order {
   id: string;
   number: string;
@@ -66,6 +82,7 @@ export interface Order {
   subtotal: number;
   total: number;
   createdAt: string;
+  deliveredAt?: string;
   items: OrderItem[];
   address: {
     fullName: string;
@@ -77,6 +94,9 @@ export interface Order {
     phone: string;
   };
   payment?: OrderPayment;
+  return?: OrderReturn;
+  /** ISO deadline for requesting a return (server-computed); absent when not returnable. */
+  returnableUntil?: string;
 }
 
 /** Mirrors the payment returned by `POST /api/payments/create-order`. */

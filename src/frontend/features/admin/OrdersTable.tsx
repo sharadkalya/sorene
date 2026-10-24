@@ -9,6 +9,8 @@ import {
   ORDER_STATUS_BADGE,
   ORDER_STATUS_LABELS,
   ORDER_STATUSES,
+  RETURN_STATUS_BADGE,
+  RETURN_STATUS_LABELS,
   type OrderStatus,
 } from '@/frontend/features/orders/order-status';
 
@@ -138,9 +140,16 @@ export default function OrdersTable({
                       </td>
                       <td className="font-semibold">{formatPrice(order.total)}</td>
                       <td>
-                        <Badge variant={ORDER_STATUS_BADGE[order.status]} size="sm">
-                          {ORDER_STATUS_LABELS[order.status]}
-                        </Badge>
+                        <div className="flex flex-col gap-1">
+                          <Badge variant={ORDER_STATUS_BADGE[order.status]} size="sm">
+                            {ORDER_STATUS_LABELS[order.status]}
+                          </Badge>
+                          {order.return && (
+                            <Badge variant={RETURN_STATUS_BADGE[order.return.status]} size="sm">
+                              {RETURN_STATUS_LABELS[order.return.status]}
+                            </Badge>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );

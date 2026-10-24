@@ -1,10 +1,11 @@
 import { AppError } from '@/backend/errors';
+import { getReturnWindowDays } from '@/common/env';
 import * as catalogRepo from '../catalog/catalog.repository';
 import { getCustomerById } from '../customer/customer.repository';
 import * as ordersRepo from './orders.repository';
 import type { OrderAddressData, OrderData, OrderItemData, OrderPaymentData } from './orders.repository';
 import { formatIssues, orderCreateSchema, type OrderCreateInput } from './orders.validation';
-import type { AdminOrderRecord, OrderRecord, OrderStatus } from './orders.types';
+import type { AdminOrderRecord, OrderRecord, OrderStatus, ReturnStatus } from './orders.types';
 
 function roundMoney(value: number): number {
   return Math.round(value * 100) / 100;
@@ -163,8 +164,10 @@ function toCustomerOrderRecord(order: AdminOrderRecord): OrderRecord {
     subtotal: order.subtotal,
     total: order.total,
     createdAt: order.createdAt,
+    deliveredAt: order.deliveredAt,
     address: order.address,
     payment: order.payment,
+    return: order.return,
   };
 }
 
@@ -174,7 +177,13 @@ export async function getCustomerOrder(customerId: string, orderId: string): Pro
   if (!order || order.customerId !== customerId) {
     return null;
   }
-  return toCustomerOrderRecord(order);
+  const record = toCustomerOrderRecord(order);
+  if (record.status === 'delivered' && record.deliveredAt && !record.return) {
+    record.returnableUntil = new Date(
+      returnDeadline(record.deliveredAt, getReturnWindowDays()),
+    ).toISOString();
+  }
+  return record;
 }
 
 /** Request cancellation; the order stays active until an admin confirms it. */
@@ -192,6 +201,81 @@ export async function requestOrderCancellation(customerId: string, orderId: stri
     throw new AppError('NOT_FOUND', 'Order not found.');
   }
   return toCustomerOrderRecord(updated);
+}
+
+function returnDeadline(deliveredAt: string, windowDays: number): number {
+  return new Date(deliveredAt).getTime() + windowDays * 24 * 60 * 60 * 1000;
+}
+
+/** Request a return; only a delivered order still within the return window. */
+export async function requestReturn(customerId: string, orderId: string): Promise<OrderRecord> {
+  const order = await ordersRepo.getOrderById(orderId);
+  if (!order || order.customerId !== customerId) {
+    throw new AppError('NOT_FOUND', 'Order not found.');
+  }
+  if (order.status !== 'delivered' || !order.deliveredAt) {
+    throw new AppError('CONFLICT', 'Only delivered orders can be returned.');
+  }
+  if (order.return) {
+    throw new AppError('CONFLICT', 'A return has already been requested for this order.');
+  }
+  if (Date.now() > returnDeadline(order.deliveredAt, getReturnWindowDays())) {
+    throw new AppError('CONFLICT', 'The return window for this order has expired.');
+  }
+
+  const updated = await ordersRepo.setOrderReturn(orderId, {
+    status: 'return_requested',
+    requestedAt: new Date(),
+  });
+  if (!updated) {
+    throw new AppError('NOT_FOUND', 'Order not found.');
+  }
+  return toCustomerOrderRecord(updated);
+}
+
+/** Admin decision on a return request: approve or reject with an optional note. */
+export async function decideReturn(
+  orderId: string,
+  input: { status: 'return_approved' | 'return_rejected'; note?: string },
+): Promise<AdminOrderRecord> {
+  const order = await ordersRepo.getOrderById(orderId);
+  if (!order) {
+    throw new AppError('NOT_FOUND', 'Order not found.');
+  }
+  if (!order.return || order.return.status !== 'return_requested') {
+    throw new AppError('CONFLICT', 'This order has no pending return request.');
+  }
+
+  const updated = await ordersRepo.setOrderReturn(orderId, {
+    status: input.status,
+    requestedAt: order.return.requestedAt,
+    adminNote: input.note?.trim() || undefined,
+    decidedAt: new Date(),
+  });
+  if (!updated) {
+    throw new AppError('NOT_FOUND', 'Order not found.');
+  }
+  return updated;
+}
+
+/** Admin progress: move an active return forward (pickup → refund). */
+export async function updateReturnStatus(orderId: string, status: ReturnStatus): Promise<AdminOrderRecord> {
+  const order = await ordersRepo.getOrderById(orderId);
+  if (!order) {
+    throw new AppError('NOT_FOUND', 'Order not found.');
+  }
+  if (!order.return || order.return.status === 'return_rejected') {
+    throw new AppError('CONFLICT', 'This order has no active return.');
+  }
+
+  const updated = await ordersRepo.setOrderReturn(orderId, {
+    ...order.return,
+    status,
+  });
+  if (!updated) {
+    throw new AppError('NOT_FOUND', 'Order not found.');
+  }
+  return updated;
 }
 
 export interface ListAdminOrdersParams {

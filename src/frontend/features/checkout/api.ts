@@ -96,6 +96,19 @@ export async function requestOrderCancellation(orderId: string): Promise<Order> 
   return data.order;
 }
 
+/** Request a return for a delivered order (within the return window). */
+export async function requestReturn(orderId: string): Promise<Order> {
+  const response = await fetch(`/api/customer/orders/${encodeURIComponent(orderId)}/return`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  const data = await readJson<{ order: Order }>(response);
+  if (!response.ok || data.success === false || !data.order) {
+    throw new Error(data.error?.message || 'We could not request a return. Please try again.');
+  }
+  return data.order;
+}
+
 /** Look up an Indian pincode to auto-fill city and state. */
 export async function lookupPincode(pincode: string): Promise<{
   city: string;

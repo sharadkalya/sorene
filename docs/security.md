@@ -57,6 +57,7 @@ its own identity.
 - `POST /api/payments/create-order` requires a customer session and is rate-limited; the amount is derived from the server-side order total (never client input) and the payment is scoped to the authenticated customer. No internal order is created at this point.
 - `POST /api/payments/verify` verifies the provider signature (HMAC-SHA256 of `orderId|paymentId`, constant-time) and, only on success, places the order and marks the payment paid. A mismatch returns 400 and never marks paid; unknown or cross-customer payments return 404. Repeated verification is idempotent.
 - `POST /api/customer/orders/[id]/cancel` lets a customer mark their own not-yet-dispatched order (`pending`/`processing`) `cancellation_requested`; the order is cancelled only when an admin confirms (never by the customer alone).
+- `POST /api/customer/orders/[id]/return` lets a customer request a return for their own `delivered` order, only within `RETURN_WINDOW_DAYS` of `deliveredAt`; an admin approves/rejects it (with an optional customer-visible note) and then progresses the return via `PATCH /api/admin/orders/[id]/return`.
 - The provider abstraction lives in `backend/integrations/payments/`; provider error bodies are logged server-side only and normalized into non-leaking `AppError`s. This mirrors the webhook-signature requirement: payments are confirmed cryptographically, never on browser reports alone. (A webhook for async confirmation is future work; see the ecommerce controls below.)
 
 ## Error handling & logging

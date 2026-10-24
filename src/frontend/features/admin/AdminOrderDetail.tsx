@@ -11,7 +11,11 @@ import {
   ORDER_STATUS_BADGE,
   ORDER_STATUS_LABELS,
   nextFulfillmentStatus,
+  nextReturnStatus,
+  RETURN_STATUS_BADGE,
+  RETURN_STATUS_LABELS,
   type OrderStatus,
+  type ReturnStatus,
 } from '@/frontend/features/orders/order-status';
 
 const PROVIDER_LABELS: Record<string, string> = {
@@ -25,6 +29,40 @@ export default function AdminOrderDetail({ order }: { order: AdminOrderRecord })
   const [busy, setBusy] = useState<OrderStatus | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [returnStatus, setReturnStatus] = useState<ReturnStatus | null>(order.return?.status ?? null);
+  const [returnNote, setReturnNote] = useState('');
+  const [returnBusy, setReturnBusy] = useState<ReturnStatus | null>(null);
+
+  async function handleReturnUpdate(nextStatus: ReturnStatus, note?: string) {
+    setReturnBusy(nextStatus);
+    setError(null);
+    setNotice(null);
+    try {
+      const response = await fetch(`/api/admin/orders/${encodeURIComponent(order.id)}/return`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: nextStatus, note }),
+      });
+      const data = (await response.json().catch(() => ({}))) as {
+        success?: boolean;
+        order?: AdminOrderRecord;
+        error?: { code?: string; message?: string };
+      };
+      if (!response.ok || data.success === false || !data.order?.return) {
+        throw new Error(data.error?.message || 'We could not update this return. Please try again.');
+      }
+      setReturnStatus(data.order.return.status);
+      setNotice(`Return status updated to ${RETURN_STATUS_LABELS[data.order.return.status].toLowerCase()}.`);
+      setReturnNote('');
+      router.refresh();
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'We could not update this return. Please try again.',
+      );
+    } finally {
+      setReturnBusy(null);
+    }
+  }
 
   async function handleUpdate(nextStatus: OrderStatus) {
     setBusy(nextStatus);
@@ -57,6 +95,7 @@ export default function AdminOrderDetail({ order }: { order: AdminOrderRecord })
   }
 
   const next = nextFulfillmentStatus(status);
+  const nextReturn = returnStatus ? nextReturnStatus(returnStatus) : null;
   const canCancel =
     status === 'pending' || status === 'processing' || status === 'cancellation_requested';
   const canRefund = status === 'cancelled' && Boolean(order.payment);
@@ -174,6 +213,75 @@ export default function AdminOrderDetail({ order }: { order: AdminOrderRecord })
               )}
             </div>
           </section>
+
+          {returnStatus && (
+            <section className="card bg-base-100 border border-base-300">
+              <div className="card-body gap-3">
+                <div className="flex items-center justify-between gap-4">
+                  <h2 className="font-semibold">Return</h2>
+                  <Badge variant={RETURN_STATUS_BADGE[returnStatus]} size="sm">
+                    {RETURN_STATUS_LABELS[returnStatus]}
+                  </Badge>
+                </div>
+
+                {order.return?.adminNote && (
+                  <p className="text-sm text-base-content/70">Note: {order.return.adminNote}</p>
+                )}
+
+                {returnStatus === 'return_requested' && (
+                  <div className="flex flex-col gap-2">
+                    <textarea
+                      className="textarea w-full"
+                      placeholder="Optional note to the customer"
+                      value={returnNote}
+                      onChange={(event) => setReturnNote(event.target.value)}
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => handleReturnUpdate('return_approved', returnNote)}
+                        disabled={returnBusy !== null}
+                      >
+                        {returnBusy === 'return_approved' ? (
+                          <span className="loading loading-spinner loading-sm" />
+                        ) : (
+                          'Approve return'
+                        )}
+                      </Button>
+                      <Button
+                        variant="error"
+                        size="sm"
+                        onClick={() => handleReturnUpdate('return_rejected', returnNote)}
+                        disabled={returnBusy !== null}
+                      >
+                        {returnBusy === 'return_rejected' ? (
+                          <span className="loading loading-spinner loading-sm" />
+                        ) : (
+                          'Reject return'
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {nextReturn && (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => handleReturnUpdate(nextReturn)}
+                    disabled={returnBusy !== null}
+                  >
+                    {returnBusy === nextReturn ? (
+                      <span className="loading loading-spinner loading-sm" />
+                    ) : (
+                      `Advance to ${RETURN_STATUS_LABELS[nextReturn]}`
+                    )}
+                  </Button>
+                )}
+              </div>
+            </section>
+          )}
 
           {(next || canCancel || canRefund) && (
             <section className="flex flex-col gap-2">
