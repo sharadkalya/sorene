@@ -262,6 +262,38 @@ Indexes: `{ providerOrderId: 1 }` (also enforces uniqueness), `{ orderId: 1 }`, 
 verification returns null instead of double-writing — callers treat null as "already paid".
 `markPaymentFailed` likewise only downgrades `created` payments (failed signature verification).
 
+## BlogPost
+
+File: `src/backend/integrations/database/models/BlogPost.ts`
+Collection: `blogposts`
+Repository: `src/backend/features/blog/blog.repository.ts`
+
+An SEO blog post authored and published by admins through the blog admin UI (no code
+deploys needed). Published posts are served at `/blog/<slug>` with per-post metadata and
+appear in the sitemap; drafts are hidden from the storefront.
+
+| Field | Type | Constraints |
+| --- | --- | --- |
+| `title` | `String` | required, trimmed, ≤200 chars; H1 + `<title>` |
+| `slug` | `String` | required, unique, lowercased, trimmed; admin-defined or generated from `title` |
+| `metaDescription` | `String` | optional, default `''`, ≤300; `<meta name="description">` + og:description |
+| `excerpt` | `String` | optional, default `''`, ≤300; shown on the blog index |
+| `content` | `String` | required, ≤200 000; Markdown body (GFM) rendered server-side |
+| `coverImageUrl` | `String` | optional, default `''`; public R2 URL used for the card + og:image |
+| `tags` | `[String]` | default `[]`, ≤20 tags, each ≤50 chars |
+| `status` | `String` | enum `draft` / `published`, default `draft`; only `published` is public |
+| `publishedAt` | `Date` | optional, default `null`; auto-set to now on first publish |
+| `authorName` | `String` | optional, default `''`, ≤100 |
+| `canonicalUrl` | `String` | optional, default `''`; absolute URL override, else `/blog/<slug>` |
+| `createdAt` / `updatedAt` | `Date` | from `timestamps: true` |
+
+Indexes: `{ slug: 1 }` (unique), `{ status: 1, publishedAt: -1 }` (public listing order).
+
+Admin CRUD lives under `/api/admin/blog`; the storefront reads posts through
+`blog.service` (server components), not a public JSON API. Slug uniqueness is enforced in
+the service: an explicit admin slug that collides raises a conflict, while an auto-generated
+slug is suffixed (`-2`, `-3`, …) like the catalog.
+
 ## Adding a new model
 
 1. Define the schema in `backend/integrations/database/models/<Name>.ts`, exporting the

@@ -1,0 +1,138 @@
+/* Typographic styling for rendered blog Markdown. Descendant element
+   selectors (e.g. `.article h2`) still match after CSS-module scoping, and all
+   colors use the daisyUI theme tokens so the article stays theme-aware. */
+
+.article {
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: var(--color-base-content);
+}
+
+.article h1,
+.article h2,
+.article h3,
+.article h4 {
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 1.75em 0 0.6em;
+  letter-spacing: 0.01em;
+}
+
+.article h1 {
+  font-size: 1.875rem;
+}
+
+.article h2 {
+  font-size: 1.5rem;
+}
+
+.article h3 {
+  font-size: 1.25rem;
+}
+
+.article h4 {
+  font-size: 1.125rem;
+}
+
+.article p {
+  margin: 0 0 1.25em;
+}
+
+.article a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.article a:hover {
+  opacity: 0.8;
+}
+
+.article strong {
+  font-weight: 600;
+}
+
+.article ul,
+.article ol {
+  margin: 0 0 1.25em;
+  padding-left: 1.5rem;
+}
+
+.article ul {
+  list-style: disc;
+}
+
+.article ol {
+  list-style: decimal;
+}
+
+.article li {
+  margin: 0.35em 0;
+}
+
+.article blockquote {
+  margin: 1.5em 0;
+  padding: 0.75rem 1.25rem;
+  border-left: 3px solid var(--color-primary);
+  background: var(--color-base-200);
+  border-radius: 0 0.5rem 0.5rem 0;
+  color: var(--color-base-content);
+}
+
+.article blockquote p {
+  margin: 0;
+}
+
+.article code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+  background: var(--color-base-200);
+  padding: 0.15em 0.4em;
+  border-radius: 0.25rem;
+}
+
+.article pre {
+  margin: 1.5em 0;
+  padding: 1rem 1.25rem;
+  background: var(--color-neutral);
+  color: var(--color-neutral-content);
+  border-radius: 0.5rem;
+  overflow-x: auto;
+}
+
+.article pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+.article hr {
+  margin: 2em 0;
+  border: 0;
+  border-top: 1px solid var(--color-base-300);
+}
+
+.article img {
+  max-width: 100%;
+  border-radius: 0.5rem;
+  margin: 1.5em 0;
+}
+
+.article table {
+  width: 100%;
+  margin: 1.5em 0;
+  border-collapse: collapse;
+  font-size: 0.95em;
+}
+
+.article th,
+.article td {
+  border: 1px solid var(--color-base-300);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.article th {
+  background: var(--color-base-200);
+  font-weight: 600;
+}

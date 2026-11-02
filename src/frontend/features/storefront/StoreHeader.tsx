@@ -42,6 +42,9 @@ export default function StoreHeader({ isAuthenticated, wishlistCount }: StoreHea
               <li>
                 <Link href="/shop/categories">Categories</Link>
               </li>
+              <li>
+                <Link href="/blog">Blog</Link>
+              </li>
             </ul>
           </div>
 
@@ -66,6 +69,7 @@ export default function StoreHeader({ isAuthenticated, wishlistCount }: StoreHea
                   <li><Link href="/shop">Shop All</Link></li>
                   <li><Link href="/shop/collections">Collections</Link></li>
                   <li><Link href="/shop/categories">Categories</Link></li>
+                  <li><Link href="/blog">Blog</Link></li>
                 </ul>
               </div>
             </div>

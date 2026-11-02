@@ -29,6 +29,12 @@ export function getEmailDomain(): string {
   return process.env.EMAIL_DOMAIN?.trim() || 'sorvenestudio.com';
 }
 
+/** Public base URL of the site (no trailing slash). Used for SEO metadata and the sitemap. */
+export function getSiteUrl(): string {
+  const value = process.env.NEXT_PUBLIC_SITE_URL?.trim() || 'https://sorvenestudio.com';
+  return value.replace(/\/+$/, '');
+}
+
 /** Admin login username. Admin login is disabled when unset. */
 export function getAdminUsername(): string | undefined {
   return process.env.ADMIN_USERNAME?.trim() || undefined;
