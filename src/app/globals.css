@@ -5,10 +5,10 @@
 @layer base {
   [data-theme="sorvene"] {
     color-scheme: light;
-    --color-base-100: oklch(96.5% 0.015 80);    /* #faf6ee cream */
-    --color-base-200: oklch(94% 0.02 75);       /* #f5efe0 lighter cream */
-    --color-base-300: oklch(87% 0.015 70);      /* #e0d8cc linen */
-    --color-base-content: oklch(15% 0.02 50);   /* #1a1510 ink */
+    --color-base-100: #FFFFFF;    /* white */
+    --color-base-200: #F8F8F6;    /* near-white */
+    --color-base-300: #F2F1EE;    /* soft white */
+    --color-base-content: #3B2A22;   /* espresso brown */
     
     --color-primary: oklch(40% 0.12 25);        /* #6b3518 brown */
     --color-primary-content: oklch(96.5% 0.015 80); /* cream text on primary */
@@ -113,6 +113,8 @@ html {
 }
 
 body {
+  background-color: var(--color-base-100);
+  color: var(--color-base-content);
   font-family: var(--font-jost), sans-serif;
   font-weight: 300;
   overflow-x: hidden;
