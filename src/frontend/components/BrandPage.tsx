@@ -77,7 +77,7 @@ export default function BrandPage({ videoSrc = '/assets/videos/SV_2.mp4' }: Bran
           <div className={`${styles.heroLabel} text-secondary`}>SORvÈNE</div>
           <h1 className={`${styles.heroTitle} text-base-content`}>Structured <em className="text-primary">Intentionality</em></h1>
           <p className={`${styles.heroText} text-base-content/70`}>
-            Structured bags made with <span className="text-primary font-normal">uncompromising intention</span>. Premium leather, hand-finished, priced fairly. We make very few. Once gone, they&apos;re gone.
+            Structured bags made with <span className="text-primary font-normal">uncompromising intention</span>. Premium faux leather, hand-finished, priced fairly. We make very few. Once gone, they&apos;re gone.
           </p>
           <div className={styles.heroCta}>
             <a href="https://www.instagram.com/sorvenestudio" target="_blank" rel="noopener noreferrer" className={`${styles.btn} ${styles.btnDark} bg-base-content text-base-100 border-base-content hover:bg-primary hover:border-primary`}>
@@ -101,7 +101,7 @@ export default function BrandPage({ videoSrc = '/assets/videos/SV_2.mp4' }: Bran
             </p>
 
             <p className={`${styles.reveal} ${styles.d1} text-base-content/70`}>
-              Made from premium-grade vegan leather with careful hand finishing. Interiors are designed for longevity. We make very few pieces, and they&apos;re priced at what they should cost — not what marketing inflates them to.
+              Made from premium-grade faux leather with careful hand finishing. Interiors are designed for longevity. We make very few pieces, and they&apos;re priced at what they should cost — not what marketing inflates them to.
             </p>
 
             <p className={`${styles.reveal} ${styles.d2} text-base-content/70`}>
@@ -113,7 +113,7 @@ export default function BrandPage({ videoSrc = '/assets/videos/SV_2.mp4' }: Bran
             <div className={`${styles.stat} ${styles.reveal} ${styles.d1} border-l-primary`}>
               <div className={`${styles.statNum} text-primary`}>Luxury</div>
               <div className={`${styles.statLabel} text-base-content/60`}>
-                Vegan Leather
+                faux Leather
               </div>
             </div>
 
@@ -148,7 +148,7 @@ export default function BrandPage({ videoSrc = '/assets/videos/SV_2.mp4' }: Bran
           <div className={`${styles.valueCard} ${styles.reveal} ${styles.d2} border-primary/15 hover:border-primary/40`}>
             <div className={`${styles.vcCardTitle} text-base-content`}>Deliberate Craft</div>
             <div className={`${styles.vcText} text-base-content/70`}>
-              Every detail is intentional — from premium vegan leather to antique finish hardware and refined hand finishing.
+              Every detail is intentional — from premium faux leather to antique finish hardware and refined hand finishing.
             </div>
           </div>
           <div className={`${styles.valueCard} ${styles.reveal} ${styles.d3} border-primary/15 hover:border-primary/40`}>
